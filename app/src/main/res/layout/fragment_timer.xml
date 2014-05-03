@@ -1,0 +1,52 @@
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:weightSum="1"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="QUEBONAFIDE - PROWO.MP3"
+        android:id="@+id/music"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.3"
+        android:gravity="bottom" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/timer_text"
+        android:layout_weight="0.5"
+        android:gravity="center_vertical|center_horizontal"
+        android:textSize="120dp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.2"
+        android:gravity="bottom">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:id="@+id/start_pause_button"
+            android:layout_weight="0.5"
+            android:onClick="onButtonClick"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop"
+            android:id="@+id/stop_reset_button"
+            android:layout_weight="0.5"
+            android:onClick="onButtonClick"/>
+    </LinearLayout>
+</LinearLayout>

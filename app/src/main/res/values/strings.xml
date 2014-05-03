@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Bucci FreestyleTimer</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="choose_timer_type_text">Choose timer type</string>
+    <string name="title_activity_timer">timer</string>
+    <string name="practice_text">Stop</string>
+
+</resources>
