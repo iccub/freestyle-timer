@@ -14,7 +14,11 @@
         android:id="@+id/music"
         android:layout_gravity="center_horizontal"
         android:layout_weight="0.3"
-        android:gravity="bottom" />
+        android:gravity="bottom"
+
+        android:textSize="25sp"
+
+        />
 
     <TextView
         android:layout_width="fill_parent"
@@ -23,12 +27,13 @@
         android:id="@+id/timer_text"
         android:layout_weight="0.5"
         android:gravity="center_vertical|center_horizontal"
-        android:textSize="120dp" />
+        android:textSize="180sp"
+        android:textColor="@color/app_blue_color"/>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_weight="0.2"
         android:gravity="bottom">
 
@@ -38,7 +43,28 @@
             android:text="Start"
             android:id="@+id/start_pause_button"
             android:layout_weight="0.5"
-            android:onClick="onButtonClick"/>
+            android:onClick="onButtonClick"
+            />
+
+        <!--<ImageView-->
+            <!--android:id="@+id/start_pause_button"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:src="@drawable/play_button"-->
+            <!--android:layout_weight="1"-->
+            <!--android:onClick="onButtonClick"-->
+            <!--android:layout_marginBottom="10dp"-->
+            <!--/>-->
+
+        <!--<ImageView-->
+            <!--android:id="@+id/stop_reset_button"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:src="@drawable/stop_button"-->
+            <!--android:layout_weight="1"-->
+            <!--android:onClick="onButtonClick"-->
+            <!--android:layout_marginBottom="10dp"-->
+            <!--/>-->
 
         <Button
             style="?android:attr/buttonStyleSmall"
