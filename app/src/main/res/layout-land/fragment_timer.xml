@@ -27,7 +27,9 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/timer_text"
             android:gravity="center_vertical|center_horizontal"
-            android:textSize="150dp" />
+            android:textSize="200sp"
+            android:textColor="@color/app_blue_color"
+            />
 
     </LinearLayout>
 

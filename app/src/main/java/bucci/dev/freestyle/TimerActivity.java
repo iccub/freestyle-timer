@@ -7,7 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.MediaPlayer;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class TimerActivity extends ActionBarActivity {
@@ -73,6 +74,10 @@ public class TimerActivity extends ActionBarActivity {
 
         startPauseButton = (Button) findViewById(R.id.start_pause_button);
         timerTextView = (TextView) findViewById(R.id.timer_text);
+
+        Typeface digital_font = Typeface.createFromAsset(getAssets(),
+                "fonts/digital_clock_font.ttf");
+        timerTextView.setTypeface(digital_font);
         initTimer();
 
 //        musicPlayer = new MusicPlayer(getApplicationContext());
@@ -131,7 +136,7 @@ public class TimerActivity extends ActionBarActivity {
         super.onStop();
 
         if (isTimerActive || timeLeft > 0)
-            //createNotification();
+//            createNotification();
             NotificationCreator.createTimerRunningNotification(getApplicationContext(), (String) startPauseButton.getText(), timeLeft, timerType);
 
         if (isFinishing()) {
@@ -338,7 +343,7 @@ public class TimerActivity extends ActionBarActivity {
     private void createNotification() {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setSmallIcon(R.drawable.bft_icon)
                         .setContentTitle("Timer is running")
 //                        .setContentText("Hello World!")
                         .setAutoCancel(true)
@@ -352,6 +357,7 @@ public class TimerActivity extends ActionBarActivity {
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(TimerActivity.class);
         stackBuilder.addNextIntent(resultIntent);
+
 
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
