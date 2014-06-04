@@ -6,19 +6,30 @@
     android:weightSum="1"
     android:gravity="center_vertical">
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="QUEBONAFIDE - PROWO.MP3"
-        android:id="@+id/music"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0.3"
-        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
 
-        android:textSize="25sp"
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/song_icon"/>
 
-        />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="QUEBONAFIDE - PROWO.MP3"
+            android:id="@+id/music"
+            android:textSize="20sp"
+            />
+
+
+        </LinearLayout>
+
+
 
     <TextView
         android:layout_width="fill_parent"
@@ -34,45 +45,45 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_weight="0.2"
+        android:layout_weight="0.22"
         android:gravity="bottom">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start"
+        <!--<Button-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Start"-->
+            <!--android:id="@+id/start_pause_button"-->
+            <!--android:layout_weight="0.5"-->
+            <!--android:onClick="onButtonClick"-->
+            <!--/>-->
+
+        <ImageView
             android:id="@+id/start_pause_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/play_button"
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
+            android:layout_marginBottom="10dp"
             />
 
-        <!--<ImageView-->
-            <!--android:id="@+id/start_pause_button"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:src="@drawable/play_button"-->
-            <!--android:layout_weight="1"-->
-            <!--android:onClick="onButtonClick"-->
-            <!--android:layout_marginBottom="10dp"-->
-            <!--/>-->
-
-        <!--<ImageView-->
-            <!--android:id="@+id/stop_reset_button"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:src="@drawable/stop_button"-->
-            <!--android:layout_weight="1"-->
-            <!--android:onClick="onButtonClick"-->
-            <!--android:layout_marginBottom="10dp"-->
-            <!--/>-->
-
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stop"
+        <ImageView
             android:id="@+id/stop_reset_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/stop_button"
             android:layout_weight="0.5"
-            android:onClick="onButtonClick"/>
+            android:onClick="onButtonClick"
+            android:layout_marginBottom="10dp"
+            />
+
+        <!--<Button-->
+            <!--style="?android:attr/buttonStyleSmall"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Stop"-->
+            <!--android:id="@+id/stop_reset_button"-->
+            <!--android:layout_weight="0.5"-->
+            <!--android:onClick="onButtonClick"/>-->
     </LinearLayout>
 </LinearLayout>

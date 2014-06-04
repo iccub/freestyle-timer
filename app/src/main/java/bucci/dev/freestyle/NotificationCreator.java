@@ -25,6 +25,7 @@ public class NotificationCreator {
 
         Intent resultIntent = new Intent(context, TimerActivity.class);
         resultIntent.putExtra(StartActivity.TIMER_TYPE, timerType);
+//        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
         resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
         resultIntent.putExtra(TimerActivity.TIME_LEFT, timeLeft);
 
