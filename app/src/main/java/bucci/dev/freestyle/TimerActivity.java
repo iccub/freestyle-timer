@@ -1,5 +1,6 @@
 package bucci.dev.freestyle;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -7,12 +8,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Typeface;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -21,15 +27,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TimerActivity extends ActionBarActivity {
     private static final String TAG = "BCC|TimerActivity";
 
     public static final String TIME_LEFT = "TIME_LEFT";
     public static final String START_PAUSE_STATE = "startpause";
+
+    public static final String SHARED_PREFS = "prefs";
+    public static final String SAVED_SONG_PATH = "SAVED_SONG_PATH";
+
+    public static final int REQ_CODE_CHOOSE_SONG = 10;
 
     public static final int MSG_START_TIMER = 0;
     public static final int MSG_PAUSE_TIMER = 1;
@@ -45,6 +56,11 @@ public class TimerActivity extends ActionBarActivity {
 
     private TextView timerTextView;
     private ImageView startPauseButton;
+    private TextView musicTextView;
+
+    private SharedPreferences settings;
+
+    private SharedPreferences.Editor editor;
 
     private long startTime = 0;
     long timeLeft = 0;
@@ -57,7 +73,7 @@ public class TimerActivity extends ActionBarActivity {
     Intent timerServiceIntent;
     static private int notificationId = 5;
 
-    private boolean isTimerActive = false;
+    private static boolean isTimerActive = false;
 
     NotificationManager mNotificationManager;
 
@@ -79,13 +95,23 @@ public class TimerActivity extends ActionBarActivity {
         Typeface digital_font = Typeface.createFromAsset(getAssets(),
                 "fonts/digital_clock_font.ttf");
         timerTextView.setTypeface(digital_font);
+
+        musicTextView = (TextView) findViewById(R.id.music);
+
+        settings = getSharedPreferences(SHARED_PREFS, 0);
+        String savedSongPath = settings.getString(SAVED_SONG_PATH, "");
+
         initTimer();
 
-//        musicPlayer = new MusicPlayer(getApplicationContext());
-
-//        if (savedInstanceState != null)
-//            Log.i(TAG, "bundle: TIME_LEFT: " + formatLongToTimerText(savedInstanceState.getLong(TIME_LEFT)) +
-//                    "\nstartPauseButton: " + savedInstanceState.getString(START_PAUSE_STATE));
+        if (!savedSongPath.equals("")) {
+            if (isSongLongEnough(savedSongPath)) {
+                setSongName(savedSongPath);
+            } else {
+                editor = settings.edit();
+                editor.remove(SAVED_SONG_PATH);
+                editor.commit();
+            }
+        }
 
         if (getIntent().getStringExtra(START_PAUSE_STATE) != null) {
 //            startPauseButton.setText(getIntent().getStringExtra(START_PAUSE_STATE));
@@ -134,6 +160,8 @@ public class TimerActivity extends ActionBarActivity {
         super.onStart();
 
         timerServiceIntent = new Intent(this, TimerService.class);
+        timerServiceIntent.putExtra(StartActivity.TIMER_TYPE, timerType);
+
         boolean isServiceBinded = getApplicationContext().bindService(timerServiceIntent, mConnection, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "bindService(): " + isServiceBinded);
 
@@ -286,6 +314,7 @@ public class TimerActivity extends ActionBarActivity {
 
 
     private void initTimer() {
+        Log.d(TAG, "initTimer()");
         Intent intent = getIntent();
 
         timerType = intent.getCharExtra(StartActivity.TIMER_TYPE, 'E');
@@ -311,6 +340,83 @@ public class TimerActivity extends ActionBarActivity {
 
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_CODE_CHOOSE_SONG && resultCode == Activity.RESULT_OK) {
+            if ((data != null) && (data.getData() != null)) {
+                Uri songUri = data.getData();
+
+                String songPath = getImagePath(songUri);
+
+                if(isSongLongEnough(songPath)) {
+                    settings = getSharedPreferences(SHARED_PREFS, 0);
+
+                    editor = settings.edit();
+                    editor.putString(SAVED_SONG_PATH, songPath);
+                    editor.commit();
+
+                    setSongName(songPath);
+                } else {
+                    makeChooseLongerSongToast();
+                    chooseSong();
+                }
+
+            }
+        }
+    }
+
+
+    //MediaPlayer.setdatasource with Uri from ACTION_GET_CONTENT is not working
+    // it's workaround using real path
+    public String getImagePath(Uri uri){
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        String document_id = cursor.getString(0);
+        document_id = document_id.substring(document_id.lastIndexOf(":")+1);
+        cursor.close();
+
+        cursor = getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                null, MediaStore.Audio.Media._ID + " = ? ", new String[]{document_id}, null);
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+        cursor.close();
+
+        return path;
+    }
+
+
+    private void makeChooseLongerSongToast() {
+
+        Toast.makeText(getApplicationContext(), "Choose song longer than " + formatLongToTimerText(startTime), Toast.LENGTH_LONG).show();
+    }
+
+    private boolean isSongLongEnough(String songPath) {
+        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+//        songRetriever.setDataSource(getApplicationContext(), songUri);
+        songRetriever.setDataSource(songPath);
+        String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long duration = Long.parseLong(durationMetadata);
+
+        switch (timerType) {
+            case StartActivity.TYPE_BATTLE:
+                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + BATTLE_TIME);
+                return duration >= BATTLE_TIME;
+            case StartActivity.TYPE_ROUTINE:
+                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + ROUTINE_TIME);
+                return duration >= ROUTINE_TIME;
+            case StartActivity.TYPE_PRACTICE:
+                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + PRACTICE_TIME);
+                return duration >= PRACTICE_TIME;
+        }
+
+        Log.i(TAG, "XXXXXXXXXXXXXXXXXX");
+
+        return  false;
+
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -323,8 +429,20 @@ public class TimerActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        return id == R.id.action_settings || super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.choose_song:
+                if (!isTimerActive) {
+                    chooseSong();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Stop timer to switch a song", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
     }
 
     public void onButtonClick(View view) {
@@ -346,7 +464,6 @@ public class TimerActivity extends ActionBarActivity {
                     ((ImageView) view).setImageResource(R.drawable.pause_button);
                 } else {
                     Log.i(TAG, "Pause clicked");
-
 //                    musicPlayer.pause();
 
                     sendMessageToService(MSG_PAUSE_TIMER);
@@ -426,5 +543,32 @@ public class TimerActivity extends ActionBarActivity {
             mBound = false;
         }
     };
+
+    public void chooseSong() {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/mpeg");
+        startActivityForResult(intent, REQ_CODE_CHOOSE_SONG);
+    }
+
+    public void setSongName(String songPath) {
+        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+        songRetriever.setDataSource(songPath);
+
+        String songTitle = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        String artist = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+
+        StringBuffer buf = new StringBuffer();
+        buf.append(artist);
+        buf.append(" - ");
+        buf.append(songTitle);
+
+        if (buf.length() > 32)
+            buf.replace(30,31, "..");
+
+        musicTextView.setText(buf.toString());
+    }
+
 
 }

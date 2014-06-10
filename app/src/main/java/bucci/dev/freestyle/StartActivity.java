@@ -109,6 +109,7 @@ public class StartActivity extends FragmentActivity {
             }
 
             bundle.putChar(TIMER_TYPE, timerTypeForGivenPosition);
+
             fragment.setArguments(bundle);
 
             return fragment;
