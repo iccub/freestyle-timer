@@ -46,17 +46,21 @@ public class TimerActivity extends ActionBarActivity {
     public static final int MSG_START_PREPARATION_TIMER = 3;
     public static final int MSG_START_EXTRA_ROUND_TIMER = 4;
 
-    public static final long BATTLE_TIME = 3 * 60 * 1000;
-    //    public static final long ROUTINE_TIME = 2 * 60 * 1000;
-    public static final long ROUTINE_TIME = 5 * 1000;
+    public static final long BATTLE_DURATION = 3 * 60 * 1000;
+    public static final long QUALIFICATION_DURATION = (long) (1.5 * 60 * 1000);
 
-    private static final long PRACTICE_TIME = (long) (1.5 * 60 * 1000);
+    //raczej nie
+    public static final long ROUTINE_DURATION = 5 * 1000;
+
 
     public static final long PREPARATION_TIME = 5 * 1000;
+    public static final String DIGITAL_CLOCK_FONT = "fonts/digital_clock_font.ttf";
+    public static final String PLAY_BUTTON_START_STATE = "Start";
+    public static final String PLAY_BUTTON_PAUSE_STATE = "Pause";
 
 
     private TextView timerTextView;
-    private ImageView startPauseButton;
+    private ImageView playButton;
     private TextView musicTextView;
 
     private SharedPreferences settings;
@@ -73,40 +77,80 @@ public class TimerActivity extends ActionBarActivity {
 
     private Messenger mService;
 
-    Intent timerServiceIntent;
+    private Intent timerServiceIntent;
     static private int notificationId = 5;
 
     private static boolean isTimerActive = false;
 
-    NotificationManager mNotificationManager;
+    private NotificationManager notificationManager;
     private boolean isExtraButtonShown = false;
-
-//    MusicPlayer musicPlayer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_timer);
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        initButtons();
+        initTimer();
+        setLastUsedSong();
+        manageRecreatingActivity(savedInstanceState);
 
-        startPauseButton = (ImageView) findViewById(R.id.start_pause_button);
-        startPauseButton.setTag("Start");
-        timerTextView = (TextView) findViewById(R.id.timer_text);
+    }
 
-        Typeface digital_font = Typeface.createFromAsset(getAssets(),
-                "fonts/digital_clock_font.ttf");
-        timerTextView.setTypeface(digital_font);
+    private void manageRecreatingActivity(Bundle savedInstanceState) {
+        if (isTimerResumedFromNotification()) {
+            Log.d(TAG, "Timer resumed from notification");
+            if (getIntent().getStringExtra(START_PAUSE_STATE).equals(PLAY_BUTTON_START_STATE)) {
+                playButton.setTag(PLAY_BUTTON_START_STATE);
+                playButton.setImageResource(R.drawable.play_button);
+            } else {
+                playButton.setTag(PLAY_BUTTON_PAUSE_STATE);
+                playButton.setImageResource(R.drawable.pause_button);
+            }
+            setTimer(getIntent().getLongExtra(TIME_LEFT, 0));
+            timeLeft = getIntent().getLongExtra(TIME_LEFT, 0);
+            getIntent().removeExtra(START_PAUSE_STATE);
+        }
 
-        musicTextView = (TextView) findViewById(R.id.music);
+        if (savedInstanceState == null || savedInstanceState.getLong(TIME_LEFT) == 0) {
+            Log.d(TAG, "Timer set to start time");
+            setTimer(startTime);
+        } else {
+            Log.d(TAG, "Timer set to savedTime");
+            long savedTimeLeft = savedInstanceState.getLong(TIME_LEFT);
+            if (savedTimeLeft > 0) {
+                timeLeft = savedTimeLeft;
+                setTimer(savedTimeLeft);
+            }
 
+        }
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getString(START_PAUSE_STATE) != null) {
+                if (savedInstanceState.getString(START_PAUSE_STATE).equals(PLAY_BUTTON_START_STATE)) {
+                    playButton.setTag(PLAY_BUTTON_START_STATE);
+                    playButton.setImageResource(R.drawable.play_button);
+                } else {
+                    playButton.setTag(PLAY_BUTTON_PAUSE_STATE);
+                    playButton.setImageResource(R.drawable.pause_button);
+                }
+            }
+
+            if (savedInstanceState.getBoolean(SHOW_EXTRA_ROUND_BUTTON)) {
+                showExtraRoundButton();
+            }
+        }
+    }
+
+    private boolean isTimerResumedFromNotification() {
+        return getIntent().getStringExtra(START_PAUSE_STATE) != null;
+    }
+
+    private void setLastUsedSong() {
         settings = getSharedPreferences(SHARED_PREFS, 0);
         String savedSongPath = settings.getString(SAVED_SONG_PATH, "");
-
-        initTimer();
-
         if (!savedSongPath.equals("")) {
             if (isSongLongEnough(savedSongPath)) {
                 setSongName(savedSongPath);
@@ -116,51 +160,17 @@ public class TimerActivity extends ActionBarActivity {
                 editor.commit();
             }
         }
+    }
 
-        if (getIntent().getStringExtra(START_PAUSE_STATE) != null) {
-            if (getIntent().getStringExtra(START_PAUSE_STATE).equals("Start")) {
-                startPauseButton.setTag("Start");
-                startPauseButton.setImageResource(R.drawable.play_button);
-            } else {
-                startPauseButton.setTag("Pause");
-                startPauseButton.setImageResource(R.drawable.pause_button);
-            }
-            setTimer(getIntent().getLongExtra(TIME_LEFT, 0));
-            timeLeft = getIntent().getLongExtra(TIME_LEFT, 0);
-            getIntent().removeExtra(START_PAUSE_STATE);
-        } else {
-            if (savedInstanceState == null || savedInstanceState.getLong(TIME_LEFT) == 0) {
-                Log.d(TAG, "Timer set to start time");
-                setTimer(startTime);
-            } else {
-                long savedTimeLeft = savedInstanceState.getLong(TIME_LEFT);
-                if (savedTimeLeft > 0) {
-                    timeLeft = savedTimeLeft;
-                    setTimer(savedTimeLeft);
-                }
+    private void initButtons() {
+        playButton = (ImageView) findViewById(R.id.start_pause_button);
+        playButton.setTag(PLAY_BUTTON_START_STATE);
 
-            }
-            if (savedInstanceState != null && savedInstanceState.getString(START_PAUSE_STATE) != null) {
-                if (savedInstanceState.getString(START_PAUSE_STATE).equals("Start")) {
-                    startPauseButton.setTag("Start");
-                    startPauseButton.setImageResource(R.drawable.play_button);
-                } else {
-                    startPauseButton.setTag("Pause");
-                    startPauseButton.setImageResource(R.drawable.pause_button);
-                }
-//                    startPauseButton.setText(savedInstanceState.getString(START_PAUSE_STATE));
-            }
-        }
-        if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(SHOW_EXTRA_ROUND_BUTTON)) {
-                showExtraRoundButton();
-            }
-        }
+        timerTextView = (TextView) findViewById(R.id.timer_text);
+        Typeface digital_font = Typeface.createFromAsset(getAssets(), DIGITAL_CLOCK_FONT);
+        timerTextView.setTypeface(digital_font);
 
-
-        //Poprawki po refaktoryzacji register teraz w onResume()
-//        LocalBroadcastManager.getInstance(this).registerReceiver(mMsgReceiver, new TimerIntentFilter());
-
+        musicTextView = (TextView) findViewById(R.id.music);
     }
 
 
@@ -177,9 +187,9 @@ public class TimerActivity extends ActionBarActivity {
 
         if (TimerService.hasTimerFinished) {
             setTimer(0);
-//            startPauseButton.setText("Start");
-            startPauseButton.setTag("Start");
-            startPauseButton.setImageResource(R.drawable.play_button);
+//            playButton.setText("Start");
+            playButton.setTag(PLAY_BUTTON_START_STATE);
+            playButton.setImageResource(R.drawable.play_button);
             timeLeft = startTime;
 
             showExtraRoundButton();
@@ -195,11 +205,11 @@ public class TimerActivity extends ActionBarActivity {
         Log.d(TAG, "onStop timeleft: " + timeLeft);
 
         if (isTimerActive || timeLeft > 0)
-            NotificationCreator.createTimerRunningNotification(getApplicationContext(), (String) startPauseButton.getTag(), timeLeft, timerType, isExtraButtonShown);
+            NotificationCreator.createTimerRunningNotification(getApplicationContext(), (String) playButton.getTag(), timeLeft, timerType, isExtraButtonShown);
 
 
         if (isFinishing()) {
-            mNotificationManager.cancel(notificationId);
+            notificationManager.cancel(notificationId);
             if (mBound) {
                 Log.i(TAG, "unbindService()");
                 getApplicationContext().unbindService(mConnection);
@@ -308,13 +318,13 @@ public class TimerActivity extends ActionBarActivity {
             } else if (action.equals(TimerIntentFilter.ACTION_TIMER_FINISH)) {
                 timeLeft = 0;
 
-                startPauseButton.setTag("Start");
-                startPauseButton.setImageResource(R.drawable.play_button);
+                playButton.setTag(PLAY_BUTTON_START_STATE);
+                playButton.setImageResource(R.drawable.play_button);
 
                 showExtraRoundButton();
 
 
-//                startPauseButton.setText("Start");
+//                playButton.setText("Start");
             } else if (action.equals(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK)) {
                 long l = intent.getLongExtra(TIME_LEFT, 0);
 //                timeLeft = l;
@@ -328,9 +338,9 @@ public class TimerActivity extends ActionBarActivity {
                 if (!isTimerActive)
                     isTimerActive = true;
 
-//                ImageView startPauseButton = (ImageView) findViewById(R.id.start_pause_button);
-//                startPauseButton.setTag("Pause");
-//                startPauseButton.setImageResource(R.drawable.pause_button);
+//                ImageView playButton = (ImageView) findViewById(R.id.start_pause_button);
+//                playButton.setTag("Pause");
+//                playButton.setImageResource(R.drawable.pause_button);
             }
 
 
@@ -368,20 +378,15 @@ public class TimerActivity extends ActionBarActivity {
         Log.d(TAG, "initTimer()");
         Intent intent = getIntent();
 
-//        timerType = intent.getCharExtra(StartActivity.TIMER_TYPE, 'E');
-//        timerType = 'B';
-
-
         timerType = (TimerType) intent.getSerializableExtra(StartActivity.TIMER_TYPE);
-
         addTimerTypeToPrefs(timerType);
 
         switch (timerType) {
             case BATTLE:
-                startTime = BATTLE_TIME;
+                startTime = BATTLE_DURATION;
                 break;
             case QUALIFICATION:
-                startTime = ROUTINE_TIME;
+                startTime = QUALIFICATION_DURATION;
                 break;
             case ROUTINE:
 //                startTime = PRACTICE_TIME;
@@ -390,6 +395,7 @@ public class TimerActivity extends ActionBarActivity {
 
         }
 
+        //Small delay for airhorn/beep
         startTime += 100;
     }
 
@@ -462,21 +468,20 @@ public class TimerActivity extends ActionBarActivity {
 
     private boolean isSongLongEnough(String songPath) {
         MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
-//        songRetriever.setDataSource(getApplicationContext(), songUri);
         songRetriever.setDataSource(songPath);
         String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
         long songDuration = Long.parseLong(durationMetadata);
 
         switch (timerType) {
             case BATTLE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + BATTLE_TIME);
-                return songDuration >= BATTLE_TIME;
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + BATTLE_DURATION);
+                return songDuration >= BATTLE_DURATION;
             case QUALIFICATION:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + ROUTINE_TIME);
-                return songDuration >= ROUTINE_TIME;
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + QUALIFICATION_DURATION);
+                return songDuration >= QUALIFICATION_DURATION;
             case ROUTINE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + PRACTICE_TIME);
-                return songDuration >= PRACTICE_TIME;
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + ROUTINE_DURATION);
+                return songDuration >= ROUTINE_DURATION;
         }
 
 
@@ -531,22 +536,22 @@ public class TimerActivity extends ActionBarActivity {
                     if (!isTimerActive)
                         isTimerActive = true;
 
-                    view.setTag("Pause");
+                    view.setTag(PLAY_BUTTON_PAUSE_STATE);
                     ((ImageView) view).setImageResource(R.drawable.pause_button);
                 } else {
                     Log.i(TAG, "Pause clicked");
 
                     sendMessageToService(MSG_PAUSE_TIMER);
-                    view.setTag("Start");
+                    view.setTag(PLAY_BUTTON_START_STATE);
                     ((ImageView) view).setImageResource(R.drawable.play_button);
                 }
             } else if (view.getId() == R.id.stop_reset_button) {
                 Log.d(TAG, "Stop clicked");
                 isTimerActive = false;
 
-                if (startPauseButton.getTag().equals("Pause")) {
-                    startPauseButton.setTag("Start");
-                    startPauseButton.setImageResource(R.drawable.play_button);
+                if (playButton.getTag().equals("Pause")) {
+                    playButton.setTag(PLAY_BUTTON_START_STATE);
+                    playButton.setImageResource(R.drawable.play_button);
                 }
                 sendMessageToService(MSG_STOP_TIMER);
             } else if (view.getId() == R.id.extra_round_button) {
@@ -557,8 +562,8 @@ public class TimerActivity extends ActionBarActivity {
                 if (!isTimerActive)
                     isTimerActive = true;
 
-                startPauseButton.setTag("Pause");
-                startPauseButton.setImageResource(R.drawable.pause_button);
+                playButton.setTag(PLAY_BUTTON_PAUSE_STATE);
+                playButton.setImageResource(R.drawable.pause_button);
             }
 
         } else

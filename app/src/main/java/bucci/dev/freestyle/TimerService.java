@@ -32,6 +32,8 @@ public class TimerService extends Service {
 
     public static boolean hasTimerFinished = false;
 
+    private int timerTypeValue = -1;
+
     private static final String TAG = "BCC|TimerService";
     private SharedPreferences sharedPrefs;
 
@@ -46,34 +48,7 @@ public class TimerService extends Service {
         public void handleMessage(final Message msg) {
             switch (msg.what) {
                 case MSG_START_TIMER:
-                    /*SharedPreferences sharedPrefs = getSharedPreferences(SHARED_PREFS, 0);
-                    musicPlayer.play(sharedPrefs.getString(SAVED_SONG_PATH, ""));
-
-                    Log.i(TAG, "Timer started, miliseconds to finish: " + msg.obj);
-                    countDownTimer = new CountDownTimer((Long) msg.obj, 500) {
-                        @Override
-                        public void onTick(long millsUntilFinished) {
-                            if (isIntervalReached(millsUntilFinished)) {
-                                playBeep();
-                            } else if(isTimerFinishing(millsUntilFinished))
-                                playFinishBeep();
-                            sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_TICK, millsUntilFinished);
-
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            Log.i(TAG, "Timer onFinish()");
-                            musicPlayer.stop();
-
-                            hasTimerFinished = true;
-
-                            sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_FINISH, 0);
-                        }
-                    }.start();*/
-
                     startTimerFromBackground((Long) msg.obj);
-
                     break;
 
                 case MSG_PAUSE_TIMER:
@@ -144,7 +119,7 @@ public class TimerService extends Service {
                         }
                     }.start();
 
-                break;
+                    break;
 
 
                 default:
@@ -162,10 +137,12 @@ public class TimerService extends Service {
             countDownTimer = new CountDownTimer((Long) time, 500) {
                 @Override
                 public void onTick(long millsUntilFinished) {
-                    if (isIntervalReached(millsUntilFinished)) {
-                        playBeep();
-                    } else if(isTimerFinishing(millsUntilFinished))
-                        playFinishBeep();
+                    if (getTimerTypeValue() != ROUTINE_TIME_VALUE) {
+                        if (isIntervalReached(millsUntilFinished)) {
+                            playBeep();
+                        } else if (isTimerFinishing(millsUntilFinished))
+                            playFinishBeep();
+                    }
                     sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_TICK, millsUntilFinished);
 
                 }
@@ -201,13 +178,13 @@ public class TimerService extends Service {
     }
 
     private long getStartTime() {
-        switch (sharedPrefs.getInt(StartActivity.TIMER_TYPE, -1)) {
+        switch (getTimerTypeValue()) {
             case BATTLE_TIME_VALUE:
-                return TimerActivity.BATTLE_TIME + 100;
+                return TimerActivity.BATTLE_DURATION + 100;
             case QUALIFICATION_TIME_VALUE:
-                return TimerActivity.ROUTINE_TIME + 100;
+                return TimerActivity.QUALIFICATION_DURATION + 100;
             case ROUTINE_TIME_VALUE:
-                return TimerActivity.ROUTINE_TIME + 100;
+                return TimerActivity.ROUTINE_DURATION + 100;
             default:
                 Log.e(TAG, "getStartTime(), Error in getting start time");
                 return 0;
@@ -215,13 +192,17 @@ public class TimerService extends Service {
 
     }
 
+    private int getTimerTypeValue() {
+        return sharedPrefs.getInt(StartActivity.TIMER_TYPE, -1);
+    }
+
     private void playBeep() {
         if (beepPlayer == null) {
-            switch (sharedPrefs.getInt(StartActivity.TIMER_TYPE, -1)) {
+            switch (getTimerTypeValue()) {
                 case BATTLE_TIME_VALUE:
                     beepPlayer = MediaPlayer.create(TimerService.this, R.raw.airhorn);
                     break;
-                case ROUTINE_TIME_VALUE:
+                case QUALIFICATION_TIME_VALUE:
                     beepPlayer = MediaPlayer.create(TimerService.this, R.raw.beep2);
                     break;
             }
