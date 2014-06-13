@@ -1,6 +1,8 @@
 package bucci.dev.freestyle;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -16,6 +18,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -25,6 +28,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Arrays;
 
 public class TimerActivity extends ActionBarActivity {
     private static final String TAG = "BCC|TimerActivity";
@@ -409,7 +414,11 @@ public class TimerActivity extends ActionBarActivity {
         if (requestCode == REQ_CODE_CHOOSE_SONG && resultCode == Activity.RESULT_OK) {
             if ((data != null) && (data.getData() != null)) {
                 Uri songUri = data.getData();
-                String songPath = Utils.getImagePathFromUri(getApplicationContext(), songUri);
+
+
+//                String songPath = Utils.getImagePathFromUri(getApplicationContext(), songUri);
+                String songPath = Utils.getPath(getApplicationContext(), songUri);
+
 
                 if (isSongLongEnough(songPath)) {
                     editor = settings.edit();
@@ -434,6 +443,10 @@ public class TimerActivity extends ActionBarActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.setType(MP3_MIME_TYPE);
         startActivityForResult(intent, REQ_CODE_CHOOSE_SONG);
+
+//        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+//        startActivityForResult(intent, REQ_CODE_CHOOSE_SONG);
+
     }
 
     @Override

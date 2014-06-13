@@ -8,8 +8,8 @@
     <string name="title_activity_timer">timer</string>
     <string name="practice_text">Stop</string>
     <string name="timer_type_battle">Battle</string>
-    <string name="timer_type_qualification">Routine</string>
-    <string name="timer_type_routine">Practice</string>
+    <string name="timer_type_qualification">Qualification</string>
+    <string name="timer_type_routine">Routine</string>
     <string name="choose_song_longer_text">Choose song longer than </string>
     <string name="stop_timer_to_switch_song_text">Stop timer to switch a song</string>
     <string name="notification_timer_running_text">Timer is running</string>

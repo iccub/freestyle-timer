@@ -115,11 +115,11 @@ public class StartActivity extends FragmentActivity {
                     timerTypeText.setText(getString(R.string.timer_type_battle));
                     break;
                 case QUALIFICATION:
-                    timerTypeImageView.setImageResource(R.drawable.routine);
+                    timerTypeImageView.setImageResource(R.drawable.qualification);
                     timerTypeText.setText(getString(R.string.timer_type_qualification));
                     break;
                 case ROUTINE:
-                    timerTypeImageView.setImageResource(R.drawable.practice);
+                    timerTypeImageView.setImageResource(R.drawable.routine);
                     timerTypeText.setText(getString(R.string.timer_type_routine));
                     break;
             }

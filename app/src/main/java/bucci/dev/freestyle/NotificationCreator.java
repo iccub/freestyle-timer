@@ -13,7 +13,7 @@ public class NotificationCreator {
     public static void createTimerRunningNotification(Context context, String startPauseButtonState, long timeLeft, TimerType timerType, boolean extraButtonVisibleState) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.bft_icon)
+                        .setSmallIcon(R.drawable.ikonka2)
                         .setContentTitle(context.getString(R.string.notification_timer_running_text))
                         .setAutoCancel(true)
                         .setOngoing(true);
