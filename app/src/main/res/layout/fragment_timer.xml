@@ -43,20 +43,13 @@
         android:textColor="@color/app_blue_color"/>
 
     <LinearLayout
+        android:id="@+id/button_layout"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_weight="0.22"
         android:gravity="bottom">
 
-        <!--<Button-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Start"-->
-            <!--android:id="@+id/start_pause_button"-->
-            <!--android:layout_weight="0.5"-->
-            <!--android:onClick="onButtonClick"-->
-            <!--/>-->
 
         <ImageView
             android:id="@+id/start_pause_button"
@@ -66,6 +59,17 @@
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
             android:layout_marginBottom="10dp"
+            />
+
+        <ImageView
+            android:id="@+id/extra_round_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/extraround_button"
+            android:layout_weight="0.5"
+            android:onClick="onButtonClick"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
             />
 
         <ImageView

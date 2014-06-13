@@ -40,8 +40,8 @@
         </LinearLayout>
 
         <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/timer_text"
             android:gravity="center_vertical|center_horizontal"
@@ -52,46 +52,45 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/button_layout"
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="75dp"
         android:layout_height="fill_parent"
         android:gravity="right"
-        android:layout_weight="0.2">
+        android:layout_weight="0.2"
+        >
 
-        <!--<Button-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Start"-->
-            <!--android:id="@+id/start_pause_button"-->
-            <!--android:layout_weight="0.5"-->
-            <!--android:onClick="onButtonClick" />-->
-
-        <!--<Button-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/practice_text"-->
-            <!--android:id="@+id/stop_reset_button"-->
-            <!--android:layout_weight="0.5"-->
-            <!--android:onClick="onButtonClick" />-->
 
         <ImageView
             android:id="@+id/start_pause_button"
-            android:layout_width="90dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/play_button"
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:onClick="onButtonClick"
-            android:layout_marginRight="15dp"
+            android:layout_marginRight="20dp"
             />
 
         <ImageView
+            android:id="@+id/extra_round_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/extraround_button"
+            android:layout_weight="0.5"
+            android:onClick="onButtonClick"
+            android:layout_marginRight="20dp"
+            android:visibility="gone"
+            />
+
+
+        <ImageView
             android:id="@+id/stop_reset_button"
-            android:layout_width="90dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/stop_button"
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:onClick="onButtonClick"
-            android:layout_marginRight="15dp"
+            android:layout_marginRight="20dp"
             />
 
     </LinearLayout>

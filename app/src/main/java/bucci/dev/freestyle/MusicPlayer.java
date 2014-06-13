@@ -27,8 +27,12 @@ public class MusicPlayer {
         this.context = context;
     }
 
+    public void init(String songPath) {
+
+    }
+
     public void play(String songPath) {
-        Log.i(TAG, "Playing.. song path: " + songPath);
+        Log.i(TAG, "Preparing music player.. song path: " + songPath);
         if (!isPaused) {
             player = new MediaPlayer();
             player.setAudioStreamType(AudioManager.STREAM_MUSIC);

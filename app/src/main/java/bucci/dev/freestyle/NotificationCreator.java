@@ -14,7 +14,7 @@ import android.util.Log;
 public class NotificationCreator {
     public static final int NOTIFICATION_TIMER_RUNNING = 5;
 
-    public static void createTimerRunningNotification(Context context, String startPauseButtonState, long timeLeft, char timerType) {
+    public static void createTimerRunningNotification(Context context, String startPauseButtonState, long timeLeft, char timerType, boolean extraButtonVisibleState) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.bft_icon)
@@ -28,6 +28,8 @@ public class NotificationCreator {
 //        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
         resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
         resultIntent.putExtra(TimerActivity.TIME_LEFT, timeLeft);
+        if (extraButtonVisibleState)
+            resultIntent.putExtra(TimerActivity.SHOW_EXTRA_ROUND_BUTTON, true);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(TimerActivity.class);

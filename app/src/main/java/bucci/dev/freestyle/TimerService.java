@@ -9,15 +9,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import java.io.IOException;
-
 import static bucci.dev.freestyle.TimerActivity.MSG_PAUSE_TIMER;
+import static bucci.dev.freestyle.TimerActivity.MSG_START_EXTRA_ROUND_TIMER;
+import static bucci.dev.freestyle.TimerActivity.MSG_START_PREPARATION_TIMER;
 import static bucci.dev.freestyle.TimerActivity.MSG_START_TIMER;
 import static bucci.dev.freestyle.TimerActivity.MSG_STOP_TIMER;
+import static bucci.dev.freestyle.TimerActivity.PREPARATION_TIME;
 import static bucci.dev.freestyle.TimerActivity.SAVED_SONG_PATH;
 import static bucci.dev.freestyle.TimerActivity.SHARED_PREFS;
 
@@ -29,7 +29,7 @@ public class TimerService extends Service {
     public static boolean hasTimerFinished = false;
 
     private static final String TAG = "BCC|TimerService";
-    private char timerType;
+    private SharedPreferences sharedPrefs;
 
     private class IncomingHandler extends Handler {
         CountDownTimer countDownTimer = null;
@@ -42,8 +42,8 @@ public class TimerService extends Service {
         public void handleMessage(final Message msg) {
             switch (msg.what) {
                 case MSG_START_TIMER:
-                    SharedPreferences settings = getSharedPreferences(SHARED_PREFS, 0);
-                    musicPlayer.play(settings.getString(SAVED_SONG_PATH, ""));
+                    /*SharedPreferences sharedPrefs = getSharedPreferences(SHARED_PREFS, 0);
+                    musicPlayer.play(sharedPrefs.getString(SAVED_SONG_PATH, ""));
 
                     Log.i(TAG, "Timer started, miliseconds to finish: " + msg.obj);
                     countDownTimer = new CountDownTimer((Long) msg.obj, 500) {
@@ -57,29 +57,18 @@ public class TimerService extends Service {
 
                         }
 
-                        //Playing finish horn sound second before onFinish() for smoother experience
-                        private boolean isTimerFinishing(long millsUntilFinished) {
-                            return millsUntilFinished < 1000;
-                        }
-
-                        private boolean isIntervalReached(long millsUntilFinished) {
-                            return millsUntilFinished % (30 * 1000) < 500;
-                        }
-
                         @Override
                         public void onFinish() {
                             Log.i(TAG, "Timer onFinish()");
-
                             musicPlayer.stop();
-
-//                            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//                            mNotificationManager.cancel(TimerActivity.NOTIFICATION_TIMER_RUNNING);
 
                             hasTimerFinished = true;
 
                             sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_FINISH, 0);
                         }
-                    }.start();
+                    }.start();*/
+
+                    startTimerFromBackground((Long) msg.obj);
 
                     break;
 
@@ -106,8 +95,52 @@ public class TimerService extends Service {
 
                     break;
 
-                case 3:
-                    Log.i(TAG, "wchodze w trojke");
+                case MSG_START_PREPARATION_TIMER:
+                    Log.i(TAG, "Preparation timer started");
+                    hasTimerFinished = false;
+
+                    if (beepPlayer != null) {
+                        beepPlayer.release();
+                        beepPlayer = null;
+
+                    }
+
+                    countDownTimer = new CountDownTimer(PREPARATION_TIME, 500) {
+                        @Override
+                        public void onTick(long millsUntilFinished) {
+                            sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK, millsUntilFinished);
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            Log.i(TAG, "Timer onFinish()");
+                            startTimerFromBackground(getStartTime());
+
+//                            sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_PREPARATION_TIMER_FINISH, 0);
+                        }
+                    }.start();
+
+                    break;
+
+                case MSG_START_EXTRA_ROUND_TIMER:
+                    Log.i(TAG, "Extra round preparation timer started");
+                    hasTimerFinished = false;
+                    countDownTimer = new CountDownTimer(PREPARATION_TIME, 500) {
+                        @Override
+                        public void onTick(long millsUntilFinished) {
+                            sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK, millsUntilFinished);
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            Log.i(TAG, "Timer onFinish()");
+                            startTimerFromBackground(10 * 1000);
+                        }
+                    }.start();
+
+                break;
 
 
                 default:
@@ -116,18 +149,67 @@ public class TimerService extends Service {
             super.handleMessage(msg);
         }
 
-        private void sendBroadcastToTimerActivity(String action, long timeleft) {
+        private void startTimerFromBackground(long time) {
+            SharedPreferences settings = getSharedPreferences(SHARED_PREFS, 0);
+            musicPlayer.play(settings.getString(SAVED_SONG_PATH, ""));
+
+
+            Log.i(TAG, "Timer started, miliseconds to finish: " + time);
+            countDownTimer = new CountDownTimer((Long) time, 500) {
+                @Override
+                public void onTick(long millsUntilFinished) {
+                    if (isIntervalReached(millsUntilFinished)) {
+                        playBeep();
+                    } else if(isTimerFinishing(millsUntilFinished))
+                        playFinishBeep();
+                    sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_TICK, millsUntilFinished);
+
+                }
+
+                @Override
+                public void onFinish() {
+                    Log.i(TAG, "Timer onFinish()");
+                    musicPlayer.stop();
+
+                    hasTimerFinished = true;
+
+                    sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_TIMER_FINISH, 0);
+                }
+            }.start();
+        }
+
+        //Playing finish horn sound a second before onFinish() for smoother experience
+        private boolean isTimerFinishing(long millsUntilFinished) {
+            return millsUntilFinished < 1000;
+        }
+
+        private boolean isIntervalReached(long millsUntilFinished) {
+            return millsUntilFinished % (30 * 1000) < 500;
+        }
+
+        private void sendBroadcastToTimerActivity(String action, long timeLeft) {
             Intent intent = new Intent(action);
-            if (action.equals(TimerIntentFilter.ACTION_TIMER_TICK))
-                intent.putExtra(TimerActivity.TIME_LEFT, timeleft);
+            if (action.equals(TimerIntentFilter.ACTION_TIMER_TICK) || action.equals(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK))
+                intent.putExtra(TimerActivity.TIME_LEFT, timeLeft);
             LocalBroadcastManager.getInstance(TimerService.this).sendBroadcast(intent);
 
         }
     }
 
+    private long getStartTime() {
+        switch (sharedPrefs.getString(StartActivity.TIMER_TYPE, "").charAt(0)) {
+            case StartActivity.TYPE_BATTLE:
+                return TimerActivity.BATTLE_TIME + 100;
+            case StartActivity.TYPE_ROUTINE:
+                return TimerActivity.ROUTINE_TIME + 100;
+        }
+
+        return 0;
+    }
+
     private void playBeep() {
         if (beepPlayer == null) {
-            switch (timerType) {
+            switch (sharedPrefs.getString(StartActivity.TIMER_TYPE, "").charAt(0)) {
                 case StartActivity.TYPE_BATTLE:
                     beepPlayer = MediaPlayer.create(TimerService.this, R.raw.airhorn);
                     break;
@@ -150,14 +232,15 @@ public class TimerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "IBinder onBind() type: ");
-        timerType = intent.getCharExtra(StartActivity.TIMER_TYPE, 'E');
+        Log.d(TAG, "IBinder onBind()");
+        sharedPrefs = getSharedPreferences(SHARED_PREFS, 0);
 
         return mMessenger.getBinder();
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "IBinder onUnbind()");
         musicPlayer.stop();
 
         return super.onUnbind(intent);
