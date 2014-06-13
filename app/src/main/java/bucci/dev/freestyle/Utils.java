@@ -4,14 +4,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 /**
  * Created by bucci on 13.06.14.
  */
 public class Utils {
+    private static final String TAG = "BCC|Utils";
+
     //MediaPlayer.setDataSource with Uri from ACTION_GET_CONTENT isn't working properly
     // it's workaround using real path
     public static String getImagePathFromUri(Context context, Uri uri) {
+        Log.d(TAG, "getImagePathFromUri(), Uri: " + uri.toString());
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         cursor.moveToFirst();
         String document_id = cursor.getString(0);

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 
 /**
  * Created by bucci on 17.04.14.
@@ -25,11 +24,11 @@ public class NotificationCreator {
 
         Intent resultIntent = new Intent(context, TimerActivity.class);
         resultIntent.putExtra(StartActivity.TIMER_TYPE, timerType);
-//        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
-        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE, startPauseButtonState);
-        resultIntent.putExtra(TimerActivity.TIME_LEFT, timeLeft);
+//        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE_PARAM, startPauseButtonState);
+        resultIntent.putExtra(TimerActivity.START_PAUSE_STATE_PARAM, startPauseButtonState);
+        resultIntent.putExtra(TimerActivity.TIME_LEFT_PARAM, timeLeft);
         if (extraButtonVisibleState)
-            resultIntent.putExtra(TimerActivity.SHOW_EXTRA_ROUND_BUTTON, true);
+            resultIntent.putExtra(TimerActivity.SHOW_EXTRA_ROUND_BUTTON_PARAM, true);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(TimerActivity.class);

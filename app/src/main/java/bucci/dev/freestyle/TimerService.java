@@ -17,9 +17,9 @@ import static bucci.dev.freestyle.TimerActivity.MSG_START_EXTRA_ROUND_TIMER;
 import static bucci.dev.freestyle.TimerActivity.MSG_START_PREPARATION_TIMER;
 import static bucci.dev.freestyle.TimerActivity.MSG_START_TIMER;
 import static bucci.dev.freestyle.TimerActivity.MSG_STOP_TIMER;
-import static bucci.dev.freestyle.TimerActivity.PREPARATION_TIME;
-import static bucci.dev.freestyle.TimerActivity.SAVED_SONG_PATH;
-import static bucci.dev.freestyle.TimerActivity.SHARED_PREFS;
+import static bucci.dev.freestyle.TimerActivity.PREPARATION_DURATION;
+import static bucci.dev.freestyle.TimerActivity.SAVED_SONG_PATH_PARAM;
+import static bucci.dev.freestyle.TimerActivity.SHARED_PREFS_PARAM;
 
 public class TimerService extends Service {
     private MusicPlayer musicPlayer;
@@ -84,7 +84,7 @@ public class TimerService extends Service {
 
                     }
 
-                    countDownTimer = new CountDownTimer(PREPARATION_TIME, 500) {
+                    countDownTimer = new CountDownTimer(PREPARATION_DURATION, 500) {
                         @Override
                         public void onTick(long millsUntilFinished) {
                             sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK, millsUntilFinished);
@@ -105,7 +105,7 @@ public class TimerService extends Service {
                 case MSG_START_EXTRA_ROUND_TIMER:
                     Log.i(TAG, "Extra round preparation timer started");
                     hasTimerFinished = false;
-                    countDownTimer = new CountDownTimer(PREPARATION_TIME, 500) {
+                    countDownTimer = new CountDownTimer(PREPARATION_DURATION, 500) {
                         @Override
                         public void onTick(long millsUntilFinished) {
                             sendBroadcastToTimerActivity(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK, millsUntilFinished);
@@ -129,8 +129,8 @@ public class TimerService extends Service {
         }
 
         private void startTimerFromBackground(long time) {
-            SharedPreferences settings = getSharedPreferences(SHARED_PREFS, 0);
-            musicPlayer.play(settings.getString(SAVED_SONG_PATH, ""));
+            SharedPreferences settings = getSharedPreferences(SHARED_PREFS_PARAM, 0);
+            musicPlayer.play(settings.getString(SAVED_SONG_PATH_PARAM, ""));
 
 
             Log.i(TAG, "Timer started, miliseconds to finish: " + time);
@@ -171,7 +171,7 @@ public class TimerService extends Service {
         private void sendBroadcastToTimerActivity(String action, long timeLeft) {
             Intent intent = new Intent(action);
             if (action.equals(TimerIntentFilter.ACTION_TIMER_TICK) || action.equals(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK))
-                intent.putExtra(TimerActivity.TIME_LEFT, timeLeft);
+                intent.putExtra(TimerActivity.TIME_LEFT_PARAM, timeLeft);
             LocalBroadcastManager.getInstance(TimerService.this).sendBroadcast(intent);
 
         }
@@ -222,7 +222,7 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "IBinder onBind()");
-        sharedPrefs = getSharedPreferences(SHARED_PREFS, 0);
+        sharedPrefs = getSharedPreferences(SHARED_PREFS_PARAM, 0);
 
         return mMessenger.getBinder();
     }
