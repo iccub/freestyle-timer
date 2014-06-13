@@ -1,35 +1,16 @@
 package bucci.dev.freestyle;
 
-import android.content.Context;
-import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.PowerManager;
-import android.provider.MediaStore;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 
-/**
- * Created by bucci on 16.04.14.
- */
 public class MusicPlayer {
     private static final String TAG = "BCC|MusicPlayer";
 
     private MediaPlayer player;
-    boolean isPaused = false;
-    Context context;
-
-    MusicPlayer(Context context) {
-        this.context = context;
-    }
-
-    public void init(String songPath) {
-
-    }
+    private boolean isPaused = false;
 
     public void play(String songPath) {
         Log.i(TAG, "Preparing music player.. song path: " + songPath);
@@ -45,10 +26,7 @@ public class MusicPlayer {
             }
         }
         player.start();
-
     }
-
-
 
     public void stop() throws IllegalStateException {
         if (player != null) {
@@ -66,8 +44,4 @@ public class MusicPlayer {
         }
     }
 
-
-    public boolean isPaused() {
-        return isPaused;
-    }
 }

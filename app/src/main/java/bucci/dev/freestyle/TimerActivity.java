@@ -52,6 +52,7 @@ public class TimerActivity extends ActionBarActivity {
     //raczej nie
     public static final long ROUTINE_DURATION = 5 * 1000;
     public static final long PREPARATION_DURATION = 5 * 1000;
+    public static final long EXTRA_TIME_DURATION = 60 * 1000;
 
     public static final int DELAY_FOR_BEEP = 100;
 
@@ -83,7 +84,6 @@ public class TimerActivity extends ActionBarActivity {
     private static boolean isTimerActive = false;
 
     private Messenger service;
-    private Intent timerServiceIntent;
     private NotificationManager notificationManager;
 
 
@@ -193,7 +193,7 @@ public class TimerActivity extends ActionBarActivity {
         String artist = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
 
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(artist);
         buf.append(" - ");
         buf.append(songTitle);
@@ -269,7 +269,7 @@ public class TimerActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        timerServiceIntent = new Intent(this, TimerService.class);
+        Intent timerServiceIntent = new Intent(this, TimerService.class);
 
         boolean isServiceBinded = getApplicationContext().bindService(timerServiceIntent, connection, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "onStart(), isServiceBinded: " + isServiceBinded);

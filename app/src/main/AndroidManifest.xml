@@ -34,10 +34,6 @@
             android:name="bucci.dev.freestyle.TimerService"
             >
         </service>
-        <service
-            android:name="bucci.dev.freestyle.demoService"
-             >
-        </service>
     </application>
 
 </manifest>

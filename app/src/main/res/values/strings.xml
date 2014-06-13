@@ -12,5 +12,6 @@
     <string name="timer_type_routine">Practice</string>
     <string name="choose_song_longer_text">Choose song longer than </string>
     <string name="stop_timer_to_switch_song_text">Stop timer to switch a song</string>
+    <string name="notification_timer_running_text">Timer is running</string>
 
 </resources>
