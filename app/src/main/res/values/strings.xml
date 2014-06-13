@@ -7,5 +7,8 @@
     <string name="choose_timer_type_text">Choose timer type</string>
     <string name="title_activity_timer">timer</string>
     <string name="practice_text">Stop</string>
+    <string name="timer_type_battle">Battle</string>
+    <string name="timer_type_qualification">Routine</string>
+    <string name="timer_type_routine">Practice</string>
 
 </resources>

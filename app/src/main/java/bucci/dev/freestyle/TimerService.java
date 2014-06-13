@@ -25,6 +25,10 @@ public class TimerService extends Service {
     private MusicPlayer musicPlayer;
     private MediaPlayer beepPlayer;
 
+    //Duplicated values from TimerType enum(Because serializable objects cannot be put in SharedPreferences)
+    private final static int BATTLE_TIME_VALUE = 0;
+    private final static int QUALIFICATION_TIME_VALUE = 1;
+    private final static int ROUTINE_TIME_VALUE = 2;
 
     public static boolean hasTimerFinished = false;
 
@@ -197,23 +201,27 @@ public class TimerService extends Service {
     }
 
     private long getStartTime() {
-        switch (sharedPrefs.getString(StartActivity.TIMER_TYPE, "").charAt(0)) {
-            case StartActivity.TYPE_BATTLE:
+        switch (sharedPrefs.getInt(StartActivity.TIMER_TYPE, -1)) {
+            case BATTLE_TIME_VALUE:
                 return TimerActivity.BATTLE_TIME + 100;
-            case StartActivity.TYPE_ROUTINE:
+            case QUALIFICATION_TIME_VALUE:
                 return TimerActivity.ROUTINE_TIME + 100;
+            case ROUTINE_TIME_VALUE:
+                return TimerActivity.ROUTINE_TIME + 100;
+            default:
+                Log.e(TAG, "getStartTime(), Error in getting start time");
+                return 0;
         }
 
-        return 0;
     }
 
     private void playBeep() {
         if (beepPlayer == null) {
-            switch (sharedPrefs.getString(StartActivity.TIMER_TYPE, "").charAt(0)) {
-                case StartActivity.TYPE_BATTLE:
+            switch (sharedPrefs.getInt(StartActivity.TIMER_TYPE, -1)) {
+                case BATTLE_TIME_VALUE:
                     beepPlayer = MediaPlayer.create(TimerService.this, R.raw.airhorn);
                     break;
-                case StartActivity.TYPE_ROUTINE:
+                case ROUTINE_TIME_VALUE:
                     beepPlayer = MediaPlayer.create(TimerService.this, R.raw.beep2);
                     break;
             }

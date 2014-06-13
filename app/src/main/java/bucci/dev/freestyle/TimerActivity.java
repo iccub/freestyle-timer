@@ -24,10 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,7 +66,8 @@ public class TimerActivity extends ActionBarActivity {
     private long startTime = 0;
     long timeLeft = 0;
     long preparationTimeLeft = 0;
-    private char timerType;
+
+    private TimerType timerType;
 
     static boolean mBound = false;
 
@@ -171,7 +169,6 @@ public class TimerActivity extends ActionBarActivity {
         super.onStart();
 
         timerServiceIntent = new Intent(this, TimerService.class);
-        timerServiceIntent.putExtra(StartActivity.TIMER_TYPE, timerType);
 
         boolean isServiceBinded = getApplicationContext().bindService(timerServiceIntent, mConnection, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "bindService(): " + isServiceBinded);
@@ -371,35 +368,40 @@ public class TimerActivity extends ActionBarActivity {
         Log.d(TAG, "initTimer()");
         Intent intent = getIntent();
 
-        timerType = intent.getCharExtra(StartActivity.TIMER_TYPE, 'E');
+//        timerType = intent.getCharExtra(StartActivity.TIMER_TYPE, 'E');
+//        timerType = 'B';
+
+
+        timerType = (TimerType) intent.getSerializableExtra(StartActivity.TIMER_TYPE);
 
         addTimerTypeToPrefs(timerType);
 
         switch (timerType) {
-            case StartActivity.TYPE_BATTLE:
+            case BATTLE:
                 startTime = BATTLE_TIME;
                 break;
-            case StartActivity.TYPE_ROUTINE:
+            case QUALIFICATION:
                 startTime = ROUTINE_TIME;
                 break;
-            case StartActivity.TYPE_PRACTICE:
+            case ROUTINE:
 //                startTime = PRACTICE_TIME;
                 startTime = 5000;
                 break;
-            case 'E':
-                Log.e(TAG, "Timer type error");
 
         }
 
         startTime += 100;
     }
 
-    private void addTimerTypeToPrefs(char timerType) {
+    private void addTimerTypeToPrefs(TimerType timerType) {
+        Log.d(TAG, "addTimerTypeToPrefs: " + timerType.getValue());
         settings = getSharedPreferences(SHARED_PREFS, 0);
+        int timerTypeValue = settings.getInt(StartActivity.TIMER_TYPE, -1);
 
-        if (!settings.getString(StartActivity.TIMER_TYPE, "").equals("") || !settings.getString(StartActivity.TIMER_TYPE, "").equals(timerType)) {
+        if (timerTypeValue != -1 || timerTypeValue != timerType.getValue()) {
+            Log.d(TAG, "adding timer type value: " + timerType.getValue());
             editor = settings.edit();
-            editor.putString(StartActivity.TIMER_TYPE, String.valueOf(timerType));
+            editor.putInt(StartActivity.TIMER_TYPE, timerType.getValue());
             editor.commit();
         }
 
@@ -463,18 +465,18 @@ public class TimerActivity extends ActionBarActivity {
 //        songRetriever.setDataSource(getApplicationContext(), songUri);
         songRetriever.setDataSource(songPath);
         String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        long duration = Long.parseLong(durationMetadata);
+        long songDuration = Long.parseLong(durationMetadata);
 
         switch (timerType) {
-            case StartActivity.TYPE_BATTLE:
-                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + BATTLE_TIME);
-                return duration >= BATTLE_TIME;
-            case StartActivity.TYPE_ROUTINE:
-                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + ROUTINE_TIME);
-                return duration >= ROUTINE_TIME;
-            case StartActivity.TYPE_PRACTICE:
-                Log.d(TAG, "isSongLongEnough(): " + duration + " > " + PRACTICE_TIME);
-                return duration >= PRACTICE_TIME;
+            case BATTLE:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + BATTLE_TIME);
+                return songDuration >= BATTLE_TIME;
+            case QUALIFICATION:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + ROUTINE_TIME);
+                return songDuration >= ROUTINE_TIME;
+            case ROUTINE:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + PRACTICE_TIME);
+                return songDuration >= PRACTICE_TIME;
         }
 
 

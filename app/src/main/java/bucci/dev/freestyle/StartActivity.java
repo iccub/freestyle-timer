@@ -1,19 +1,18 @@
 package bucci.dev.freestyle;
 
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,23 +20,15 @@ public class StartActivity extends FragmentActivity {
     private static final String TAG = "BCC|StartActivity";
 
     public static final String TIMER_TYPE = "timer_type";
-    public static final int TIMER_TYPE_COUNT = 3;
-
-    public static final char TYPE_BATTLE = 'B';
-    public static final char TYPE_ROUTINE = 'R';
-    public static final char TYPE_PRACTICE = 'P';
-
-
-    BattleTypeAdapter mAdapter;
-    ViewPager mPager;
+    public static final int TIMER_MODES_COUNT = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_start);
 
-        mAdapter = new BattleTypeAdapter(getSupportFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
+        BattleTypeAdapter mAdapter = new BattleTypeAdapter(getSupportFragmentManager());
+        ViewPager mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
 
     }
@@ -45,7 +36,6 @@ public class StartActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.start, menu);
         return true;
@@ -65,21 +55,9 @@ public class StartActivity extends FragmentActivity {
 
     public void goToTimer(View view) {
         Intent intent = new Intent(this, TimerActivity.class);
+        TimerType battleType = (TimerType) view.getTag();
 
-        Character battleType = (Character) view.getTag();
-
-        switch (battleType) {
-            case TYPE_BATTLE:
-                intent.putExtra(TIMER_TYPE, TYPE_BATTLE);
-                break;
-            case TYPE_ROUTINE:
-                intent.putExtra(TIMER_TYPE, TYPE_ROUTINE);
-                break;
-            case TYPE_PRACTICE:
-                intent.putExtra(TIMER_TYPE, TYPE_PRACTICE);
-                break;
-        }
-
+        intent.putExtra(TIMER_TYPE, battleType);
         startActivity(intent);
     }
 
@@ -94,21 +72,20 @@ public class StartActivity extends FragmentActivity {
             Fragment fragment = new PageFragment();
             Bundle bundle = new Bundle();
 
-            char timerTypeForGivenPosition = 'X';
-
             switch (position) {
                 case 0:
-                    timerTypeForGivenPosition = TYPE_BATTLE;
+                    bundle.putSerializable(TIMER_TYPE, TimerType.BATTLE);
                     break;
                 case 1:
-                    timerTypeForGivenPosition = TYPE_ROUTINE;
+                    bundle.putSerializable(TIMER_TYPE, TimerType.QUALIFICATION);
                     break;
                 case 2:
-                    timerTypeForGivenPosition = TYPE_PRACTICE;
+                    bundle.putSerializable(TIMER_TYPE, TimerType.ROUTINE);
+                    break;
+                default:
+                    Log.e(TAG, "BattleTypeAdapter getItem() error with setting timer type to position");
                     break;
             }
-
-            bundle.putChar(TIMER_TYPE, timerTypeForGivenPosition);
 
             fragment.setArguments(bundle);
 
@@ -119,7 +96,7 @@ public class StartActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            return TIMER_TYPE_COUNT;
+            return TIMER_MODES_COUNT;
         }
     }
 
@@ -128,26 +105,27 @@ public class StartActivity extends FragmentActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View swipeView = inflater.inflate(R.layout.page_fragment, container, false);
             Bundle bundle = getArguments();
-            char timerType = bundle.getChar(TIMER_TYPE);
-            ImageView timerTypeImage = (ImageView) swipeView.findViewById(R.id.timer_type_image);
+            ImageView timerTypeImageView = (ImageView) swipeView.findViewById(R.id.timer_type_image);
             TextView timerTypeText = (TextView) swipeView.findViewById(R.id.timer_type_text);
 
+            TimerType timerType = (TimerType) bundle.getSerializable(TIMER_TYPE);
+
             switch (timerType) {
-                case TYPE_BATTLE:
-                    timerTypeImage.setImageResource(R.drawable.battle);
-                    timerTypeText.setText("Battle");
+                case BATTLE:
+                    timerTypeImageView.setImageResource(R.drawable.battle);
+                    timerTypeText.setText(getString(R.string.timer_type_battle));
                     break;
-                case TYPE_ROUTINE:
-                    timerTypeImage.setImageResource(R.drawable.routine);
-                    timerTypeText.setText("Routine");
+                case QUALIFICATION:
+                    timerTypeImageView.setImageResource(R.drawable.routine);
+                    timerTypeText.setText(getString(R.string.timer_type_qualification));
                     break;
-                case TYPE_PRACTICE:
-                    timerTypeImage.setImageResource(R.drawable.practice);
-                    timerTypeText.setText("Practice");
+                case ROUTINE:
+                    timerTypeImageView.setImageResource(R.drawable.practice);
+                    timerTypeText.setText(getString(R.string.timer_type_routine));
                     break;
             }
 
-            timerTypeImage.setTag(timerType);
+            timerTypeImageView.setTag(timerType);
 
             return swipeView;
         }
