@@ -2,11 +2,11 @@ package bucci.dev.freestyle;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -18,7 +18,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -28,8 +27,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.Arrays;
 
 public class TimerActivity extends ActionBarActivity {
     private static final String TAG = "BCC|TimerActivity";
@@ -41,6 +38,7 @@ public class TimerActivity extends ActionBarActivity {
     public static final String SHOW_EXTRA_ROUND_BUTTON_PARAM = "SHOW_EXTRA_ROUND_BUTTON_PARAM";
     public static final String SAVED_SONG_PATH_PARAM = "SAVED_SONG_PATH_PARAM";
     public static final String START_PAUSE_STATE_PARAM = "START_PAUSE_STATE_PARAM";
+    public static final String FIRST_TIME_USED_PARAM = "FIRST_TIME_USED_PARAM";
 
     public static final String SHARED_PREFS_PARAM = "prefs";
 
@@ -54,9 +52,10 @@ public class TimerActivity extends ActionBarActivity {
     public static final int MSG_START_EXTRA_ROUND_TIMER = 4;
     public static final long BATTLE_DURATION = 3 * 60 * 1000;
     public static final long QUALIFICATION_DURATION = (long) (1.5 * 60 * 1000);
-    //raczej nie
-    public static final long ROUTINE_DURATION = 5 * 1000;
-    public static final long PREPARATION_DURATION = 5 * 1000;
+    //routine timer varies on song duration so it's not constant
+    public static long routine_duration = 0;
+
+    public static final long PREPARATION_DURATION = 10 * 1000;
     public static final long EXTRA_TIME_DURATION = 60 * 1000;
 
     public static final int DELAY_FOR_BEEP = 100;
@@ -100,11 +99,40 @@ public class TimerActivity extends ActionBarActivity {
 
         settings = getSharedPreferences(SHARED_PREFS_PARAM, MODE_PRIVATE);
 
+        if (isFirstTimeUsed())
+            createFirstTimeUsedDialog();
+
         initButtons();
         initTimer();
         setLastUsedSong();
         manageRecreatingActivity(savedInstanceState);
 
+    }
+
+    private void createFirstTimeUsedDialog() {
+        Log.i(TAG, "App first time used, showing welcome screen");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(getString(R.string.first_time_dialog_guide) + "\n\n" +
+                getString(R.string.first_time_dialog_ideas_bugs_text) + "\n\n" +
+                getString(R.string.have_fun_text))
+                .setTitle(getString(R.string.first_time_dialog_title))
+                .setPositiveButton(getString(R.string.ok_text), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        editor = settings.edit();
+                        editor.putBoolean(FIRST_TIME_USED_PARAM, false);
+                        editor.commit();
+                    }
+                });
+
+
+        builder.create().show();
+
+    }
+
+    private boolean isFirstTimeUsed() {
+        return settings.getBoolean(FIRST_TIME_USED_PARAM, true);
     }
 
     private void initButtons() {
@@ -133,8 +161,15 @@ public class TimerActivity extends ActionBarActivity {
                 startTime = QUALIFICATION_DURATION;
                 break;
             case ROUTINE:
-//                startTime = ROUTINE_DURATION;
-                startTime = 5000;
+                if (timerTextView.getText().equals(getString(R.string.song_empty)))
+                    startTime = 0;
+                else {
+                    long duration = getSongDuration();
+                    routine_duration = duration;
+                    startTime = duration;
+                }
+
+//                startTime = 5000;
                 break;
 
         }
@@ -154,6 +189,19 @@ public class TimerActivity extends ActionBarActivity {
             editor.commit();
         }
 
+    }
+
+    private long getSongDuration() {
+        String savedSongPath = settings.getString(SAVED_SONG_PATH_PARAM, SONG_PATH_EMPTY_VALUE);
+        if (!savedSongPath.equals(SONG_PATH_EMPTY_VALUE)) {
+            MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+            songRetriever.setDataSource(savedSongPath);
+            String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            return Long.parseLong(durationMetadata);
+        }
+
+        return 0;
     }
 
     private void setLastUsedSong() {
@@ -183,8 +231,8 @@ public class TimerActivity extends ActionBarActivity {
                 Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + QUALIFICATION_DURATION);
                 return songDuration >= QUALIFICATION_DURATION;
             case ROUTINE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + ROUTINE_DURATION);
-                return songDuration >= ROUTINE_DURATION;
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + routine_duration);
+                return songDuration >= routine_duration;
         }
 
         return false;
@@ -217,33 +265,34 @@ public class TimerActivity extends ActionBarActivity {
             else
                 setPlayButtonState(PLAY_BUTTON_PAUSE_STATE);
 
+            Log.i("xxx", "time: " + getIntent().getLongExtra(TIME_LEFT_PARAM, 0));
             setTimer(getIntent().getLongExtra(TIME_LEFT_PARAM, 0));
             timeLeft = getIntent().getLongExtra(TIME_LEFT_PARAM, 0);
             getIntent().removeExtra(START_PAUSE_STATE_PARAM);
-        }
-
-        if (savedInstanceState == null || savedInstanceState.getLong(TIME_LEFT_PARAM) == 0) {
-            Log.d(TAG, "Timer set to start time");
-            setTimer(startTime);
         } else {
-            Log.d(TAG, "Timer set to savedTime");
-            long savedTimeLeft = savedInstanceState.getLong(TIME_LEFT_PARAM);
-            if (savedTimeLeft > 0) {
-                timeLeft = savedTimeLeft;
-                setTimer(savedTimeLeft);
-            }
-        }
-
-        if (savedInstanceState != null) {
-            if (savedInstanceState.getString(START_PAUSE_STATE_PARAM) != null) {
-                if (savedInstanceState.getString(START_PAUSE_STATE_PARAM).equals(PLAY_BUTTON_START_STATE))
-                    setPlayButtonState(PLAY_BUTTON_START_STATE);
-                else
-                    setPlayButtonState(PLAY_BUTTON_PAUSE_STATE);
+            if (savedInstanceState == null || savedInstanceState.getLong(TIME_LEFT_PARAM) == 0) {
+                Log.d(TAG, "Timer set to start time");
+                setTimer(startTime);
+            } else {
+                Log.d(TAG, "Timer set to savedTime");
+                long savedTimeLeft = savedInstanceState.getLong(TIME_LEFT_PARAM);
+                if (savedTimeLeft > 0) {
+                    timeLeft = savedTimeLeft;
+                    setTimer(savedTimeLeft);
+                }
             }
 
-            if (savedInstanceState.getBoolean(SHOW_EXTRA_ROUND_BUTTON_PARAM))
-                showExtraRoundButton();
+            if (savedInstanceState != null) {
+                if (savedInstanceState.getString(START_PAUSE_STATE_PARAM) != null) {
+                    if (savedInstanceState.getString(START_PAUSE_STATE_PARAM).equals(PLAY_BUTTON_START_STATE))
+                        setPlayButtonState(PLAY_BUTTON_START_STATE);
+                    else
+                        setPlayButtonState(PLAY_BUTTON_PAUSE_STATE);
+                }
+
+                if (savedInstanceState.getBoolean(SHOW_EXTRA_ROUND_BUTTON_PARAM))
+                    showExtraRoundButton();
+            }
         }
     }
 
@@ -285,7 +334,8 @@ public class TimerActivity extends ActionBarActivity {
             playButton.setImageResource(R.drawable.play_button);
             timeLeft = startTime;
 
-            showExtraRoundButton();
+            if (timerType == TimerType.BATTLE)
+                showExtraRoundButton();
         }
 
     }
@@ -300,6 +350,7 @@ public class TimerActivity extends ActionBarActivity {
 
         if (isFinishing()) {
             notificationManager.cancel(NotificationCreator.NOTIFICATION_TIMER_RUNNING);
+            isTimerActive = false;
             if (serviceBound) {
                 Log.i(TAG, "onStop() isFinishing, unbinding service..");
                 getApplicationContext().unbindService(connection);
@@ -386,7 +437,9 @@ public class TimerActivity extends ActionBarActivity {
                 timeLeft = 0;
                 playButton.setTag(PLAY_BUTTON_START_STATE);
                 playButton.setImageResource(R.drawable.play_button);
-                showExtraRoundButton();
+
+                if (timerType == TimerType.BATTLE)
+                    showExtraRoundButton();
 
             } else if (action.equals(TimerIntentFilter.ACTION_PREPARATION_TIMER_TICK)) {
                 long timeLeftFromService = intent.getLongExtra(TIME_LEFT_PARAM, 0);
@@ -415,23 +468,33 @@ public class TimerActivity extends ActionBarActivity {
             if ((data != null) && (data.getData() != null)) {
                 Uri songUri = data.getData();
 
-
-//                String songPath = Utils.getImagePathFromUri(getApplicationContext(), songUri);
                 String songPath = Utils.getPath(getApplicationContext(), songUri);
 
 
-                if (isSongLongEnough(songPath)) {
-                    editor = settings.edit();
-                    editor.putString(SAVED_SONG_PATH_PARAM, songPath);
-                    editor.commit();
-
-                    setSongName(songPath);
+                if (timerType != TimerType.ROUTINE) {
+                    if (isSongLongEnough(songPath)) {
+                        saveSongPath(songPath);
+                    } else {
+                        makeChooseLongerSongToast();
+                        chooseSong();
+                    }
                 } else {
-                    makeChooseLongerSongToast();
-                    chooseSong();
+                    saveSongPath(songPath);
+
+                    long duration = getSongDuration();
+                    routine_duration = duration;
+                    startTime = duration;
+                    timerTextView.setText(formatLongToTimerText(startTime));
                 }
             }
         }
+    }
+
+    private void saveSongPath(String songPath) {
+        editor = settings.edit();
+        editor.putString(SAVED_SONG_PATH_PARAM, songPath);
+        editor.commit();
+        setSongName(songPath);
     }
 
     private void makeChooseLongerSongToast() {
@@ -477,8 +540,9 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     public void onButtonClick(View view) {
-        //Whatever button we click, extraRound button should hide
-        hideExtraRoundButton();
+        //Whatever button we click, extraRound button should hide\
+        if (timerType == TimerType.BATTLE)
+            hideExtraRoundButton();
 
         if (serviceBound) {
             switch (view.getId()) {

@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Swipe to choose timer type"
+        android:text="@string/swipe_to_choose_text"
         android:textSize="25sp"
         android:layout_gravity="center"
         />

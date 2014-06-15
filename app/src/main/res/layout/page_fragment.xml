@@ -9,11 +9,12 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:id="@+id/timer_type_image"
             android:onClick="goToTimer"
             android:src="@drawable/routine"
             android:layout_weight="1"
+
             />
 
     <TextView
@@ -21,7 +22,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/timer_type_text"
         android:textSize="50sp"
-        android:text="Practice"
         android:layout_gravity="center"
         android:layout_marginBottom="10dp"
         />

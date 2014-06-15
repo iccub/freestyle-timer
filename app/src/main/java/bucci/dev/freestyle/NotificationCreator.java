@@ -7,13 +7,13 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
-public class NotificationCreator {
+class NotificationCreator {
     public static final int NOTIFICATION_TIMER_RUNNING = 5;
 
     public static void createTimerRunningNotification(Context context, String startPauseButtonState, long timeLeft, TimerType timerType, boolean extraButtonVisibleState) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ikonka2)
+                        .setSmallIcon(R.drawable.bft_icon_gray)
                         .setContentTitle(context.getString(R.string.notification_timer_running_text))
                         .setAutoCancel(true)
                         .setOngoing(true);

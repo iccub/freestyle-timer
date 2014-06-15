@@ -110,8 +110,7 @@ public class TimerService extends Service {
                 public void onFinish() {
                     Log.d(TAG, "Preparation timer onFinish()");
                     if (isExtraRound)
-                        startTimerFromBackground(5 * 1000);
-//                        startTimerFromBackground(TimerActivity.EXTRA_TIME_DURATION);
+                        startTimerFromBackground(TimerActivity.EXTRA_TIME_DURATION);
                     else
                         startTimerFromBackground(getStartTime());
 
@@ -175,7 +174,7 @@ public class TimerService extends Service {
             case QUALIFICATION_TIME_VALUE:
                 return TimerActivity.QUALIFICATION_DURATION + DELAY_FOR_BEEP;
             case ROUTINE_TIME_VALUE:
-                return TimerActivity.ROUTINE_DURATION + DELAY_FOR_BEEP;
+                return TimerActivity.routine_duration + DELAY_FOR_BEEP;
             default:
                 Log.e(TAG, "getStartTime(), Error in getting start time");
                 return 0;

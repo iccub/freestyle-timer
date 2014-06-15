@@ -4,7 +4,8 @@
     android:layout_height="fill_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:weightSum="1"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:baselineAligned="false">
 
     <LinearLayout
         android:orientation="vertical"
@@ -13,32 +14,25 @@
         android:layout_weight="0.8"
         android:gravity="center_vertical|center_horizontal">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp">
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/song_icon"/>
 
             <TextView
-                android:layout_width="360dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="-"
+                android:text="@string/song_empty"
                 android:maxLength="32"
                 android:ellipsize="end"
                 android:id="@+id/music"
-                android:layout_weight="0.3"
                 android:textSize="25sp"
+                android:drawableLeft="@drawable/song_icon"
+                android:drawablePadding="10dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
                 />
 
 
-        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
@@ -64,34 +58,34 @@
 
         <ImageView
             android:id="@+id/start_pause_button"
-            android:layout_width="match_parent"
+            android:layout_width="85dp"
             android:layout_height="match_parent"
             android:src="@drawable/play_button"
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="15dp"
             />
 
         <ImageView
             android:id="@+id/extra_round_button"
-            android:layout_width="match_parent"
+            android:layout_width="85dp"
             android:layout_height="match_parent"
             android:src="@drawable/extraround_button"
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="15dp"
             android:visibility="gone"
             />
 
 
         <ImageView
             android:id="@+id/stop_reset_button"
-            android:layout_width="match_parent"
+            android:layout_width="85dp"
             android:layout_height="match_parent"
             android:src="@drawable/stop_button"
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="15dp"
             />
 
     </LinearLayout>

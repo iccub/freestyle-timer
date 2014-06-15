@@ -6,29 +6,23 @@
     android:weightSum="1"
     android:gravity="center_vertical">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/song_icon"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="-"
+            android:text="@string/song_empty"
             android:maxLength="32"
             android:id="@+id/music"
             android:textSize="20sp"
+            android:drawableLeft="@drawable/song_icon"
+            android:drawablePadding="10dp"
+            android:gravity="center"
+            android:layout_gravity="center"
             />
 
 
-        </LinearLayout>
 
 
 
