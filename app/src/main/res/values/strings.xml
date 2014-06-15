@@ -17,5 +17,9 @@
     <string name="first_time_dialog_guide">To start, select a song using action bar icon </string>
     <string name="first_time_dialog_ideas_bugs_text">It\'s the first version of app so if you have any ideas to improve it or encountered bugs feel free to message me at mail@bucci.pl</string>
     <string name="have_fun_text">Have fun!</string>
+    <string name="content_description_playbutton">Play button</string>
+    <string name="content_description_extra_round_button">Extra round button</string>
+    <string name="content_description_stop_button">Stop button</string>
+    <string name="content_description_timer_representation">Timer type representation</string>
 
 </resources>

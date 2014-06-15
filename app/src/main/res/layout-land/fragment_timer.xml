@@ -64,6 +64,7 @@
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
             android:layout_marginRight="15dp"
+            android:contentDescription="@string/content_description_playbutton"
             />
 
         <ImageView
@@ -75,6 +76,7 @@
             android:onClick="onButtonClick"
             android:layout_marginRight="15dp"
             android:visibility="gone"
+            android:contentDescription="@string/content_description_extra_round_button"
             />
 
 
@@ -86,6 +88,7 @@
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
             android:layout_marginRight="15dp"
+            android:contentDescription="@string/content_description_stop_button"
             />
 
     </LinearLayout>

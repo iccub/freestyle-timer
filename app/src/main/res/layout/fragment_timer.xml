@@ -53,7 +53,7 @@
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
             android:layout_marginBottom="10dp"
-            />
+            android:contentDescription="@string/content_description_playbutton" />
 
         <ImageView
             android:id="@+id/extra_round_button"
@@ -64,7 +64,7 @@
             android:onClick="onButtonClick"
             android:layout_marginBottom="10dp"
             android:visibility="gone"
-            />
+            android:contentDescription="@string/content_description_extra_round_button" />
 
         <ImageView
             android:id="@+id/stop_reset_button"
@@ -74,7 +74,7 @@
             android:layout_weight="0.5"
             android:onClick="onButtonClick"
             android:layout_marginBottom="10dp"
-            />
+            android:contentDescription="@string/content_description_stop_button" />
 
         <!--<Button-->
             <!--style="?android:attr/buttonStyleSmall"-->

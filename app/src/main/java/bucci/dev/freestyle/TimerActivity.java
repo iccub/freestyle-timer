@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -164,7 +163,7 @@ public class TimerActivity extends ActionBarActivity {
                 if (timerTextView.getText().equals(getString(R.string.song_empty)))
                     startTime = 0;
                 else {
-                    long duration = getSongDuration();
+                    long duration = MediaUtils.getSongDuration(settings.getString(SAVED_SONG_PATH_PARAM, SONG_PATH_EMPTY_VALUE));
                     routine_duration = duration;
                     startTime = duration;
                 }
@@ -191,70 +190,17 @@ public class TimerActivity extends ActionBarActivity {
 
     }
 
-    private long getSongDuration() {
-        String savedSongPath = settings.getString(SAVED_SONG_PATH_PARAM, SONG_PATH_EMPTY_VALUE);
-        if (!savedSongPath.equals(SONG_PATH_EMPTY_VALUE)) {
-            MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
-            songRetriever.setDataSource(savedSongPath);
-            String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-
-            return Long.parseLong(durationMetadata);
-        }
-
-        return 0;
-    }
-
     private void setLastUsedSong() {
         String savedSongPath = settings.getString(SAVED_SONG_PATH_PARAM, SONG_PATH_EMPTY_VALUE);
         if (!savedSongPath.equals(SONG_PATH_EMPTY_VALUE)) {
-            if (isSongLongEnough(savedSongPath)) {
-                setSongName(savedSongPath);
+            if (MediaUtils.isSongLongEnough(savedSongPath, timerType)) {
+                musicTextView.setText(MediaUtils.getSongName(savedSongPath));
             } else {
                 editor = settings.edit();
                 editor.remove(SAVED_SONG_PATH_PARAM);
                 editor.commit();
             }
         }
-    }
-
-    private boolean isSongLongEnough(String songPath) {
-        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
-        songRetriever.setDataSource(songPath);
-        String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        long songDuration = Long.parseLong(durationMetadata);
-
-        switch (timerType) {
-            case BATTLE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + BATTLE_DURATION);
-                return songDuration >= BATTLE_DURATION;
-            case QUALIFICATION:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + QUALIFICATION_DURATION);
-                return songDuration >= QUALIFICATION_DURATION;
-            case ROUTINE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + routine_duration);
-                return songDuration >= routine_duration;
-        }
-
-        return false;
-    }
-
-    public void setSongName(String songPath) {
-        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
-        songRetriever.setDataSource(songPath);
-
-        String songTitle = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        String artist = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-
-
-        StringBuilder buf = new StringBuilder();
-        buf.append(artist);
-        buf.append(" - ");
-        buf.append(songTitle);
-
-        if (buf.length() > 32)
-            buf.replace(30, 31, "..");
-
-        musicTextView.setText(buf.toString());
     }
 
     private void manageRecreatingActivity(Bundle savedInstanceState) {
@@ -468,11 +414,11 @@ public class TimerActivity extends ActionBarActivity {
             if ((data != null) && (data.getData() != null)) {
                 Uri songUri = data.getData();
 
-                String songPath = Utils.getPath(getApplicationContext(), songUri);
+                String songPath = MediaUtils.getPath(getApplicationContext(), songUri);
 
 
                 if (timerType != TimerType.ROUTINE) {
-                    if (isSongLongEnough(songPath)) {
+                    if (MediaUtils.isSongLongEnough(songPath, timerType)) {
                         saveSongPath(songPath);
                     } else {
                         makeChooseLongerSongToast();
@@ -481,7 +427,7 @@ public class TimerActivity extends ActionBarActivity {
                 } else {
                     saveSongPath(songPath);
 
-                    long duration = getSongDuration();
+                    long duration = MediaUtils.getSongDuration(settings.getString(SAVED_SONG_PATH_PARAM, SONG_PATH_EMPTY_VALUE));
                     routine_duration = duration;
                     startTime = duration;
                     timerTextView.setText(formatLongToTimerText(startTime));
@@ -494,7 +440,7 @@ public class TimerActivity extends ActionBarActivity {
         editor = settings.edit();
         editor.putString(SAVED_SONG_PATH_PARAM, songPath);
         editor.commit();
-        setSongName(songPath);
+        musicTextView.setText(MediaUtils.getSongName(songPath));
     }
 
     private void makeChooseLongerSongToast() {
@@ -506,9 +452,6 @@ public class TimerActivity extends ActionBarActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.setType(MP3_MIME_TYPE);
         startActivityForResult(intent, REQ_CODE_CHOOSE_SONG);
-
-//        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-//        startActivityForResult(intent, REQ_CODE_CHOOSE_SONG);
 
     }
 

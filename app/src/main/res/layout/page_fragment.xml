@@ -14,7 +14,7 @@
             android:onClick="goToTimer"
             android:src="@drawable/routine"
             android:layout_weight="1"
-
+            android:contentDescription="@string/content_description_timer_representation"
             />
 
     <TextView

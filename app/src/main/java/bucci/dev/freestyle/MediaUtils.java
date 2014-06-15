@@ -4,18 +4,73 @@ import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 
-class Utils {
-    private static final String TAG = "BCC|Utils";
+class MediaUtils {
+    private static final String TAG = "BCC|MediaUtils";
+    private static final String SONG_PATH_EMPTY_VALUE = "";
 
+    public static boolean isSongLongEnough(String songPath, TimerType timerType) {
+        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+        songRetriever.setDataSource(songPath);
+        String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long songDuration = Long.parseLong(durationMetadata);
+
+        switch (timerType) {
+            case BATTLE:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.BATTLE_DURATION);
+                return songDuration >= TimerActivity.BATTLE_DURATION;
+            case QUALIFICATION:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.QUALIFICATION_DURATION);
+                return songDuration >= TimerActivity.QUALIFICATION_DURATION;
+            case ROUTINE:
+                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.routine_duration);
+                return songDuration >= TimerActivity.routine_duration;
+        }
+
+        return false;
+    }
+
+    public static String getSongName(String songPath) {
+        MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+        songRetriever.setDataSource(songPath);
+
+        String songTitle = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        String artist = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+
+        StringBuilder buf = new StringBuilder();
+        buf.append(artist);
+        buf.append(" - ");
+        buf.append(songTitle);
+
+        //TODO make song title length enough depending on screen size
+        if (buf.length() > 32)
+            buf.replace(30, 31, "..");
+
+        return buf.toString();
+    }
+
+    public static long getSongDuration(String savedSongPath) {
+        if (!savedSongPath.equals(SONG_PATH_EMPTY_VALUE)) {
+            MediaMetadataRetriever songRetriever = new MediaMetadataRetriever();
+            songRetriever.setDataSource(savedSongPath);
+            String durationMetadata = songRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            return Long.parseLong(durationMetadata);
+        }
+
+        return 0;
+    }
 
     /**
-     * Paul Burke method from https://github.com/iPaulPro/aFileChooser
+     * Paul Burke method from https://github.com/iPaulPro/aFileChooser to get song path
      * Get a file path from a Uri. This will get the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
