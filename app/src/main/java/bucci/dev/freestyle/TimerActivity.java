@@ -1,3 +1,25 @@
+/*
+ Copyright Michal Buczek, 2014
+ All rights reserved.
+
+This file is part of Freestyle Timer.
+
+    Freestyle Timer is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Freestyle Timer is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Freestyle Timer; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+
 package bucci.dev.freestyle;
 
 import android.app.Activity;
@@ -28,7 +50,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 public class TimerActivity extends ActionBarActivity {
+    private static final boolean DEBUG = false;
     private static final String TAG = "BCC|TimerActivity";
 
     public static final String DIGITAL_CLOCK_FONT = "fonts/digital_clock_font.ttf";
@@ -110,7 +134,7 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     private void createFirstTimeUsedDialog() {
-        Log.i(TAG, "App first time used, showing welcome screen");
+        if (DEBUG) Log.i(TAG, "App first time used, showing welcome screen");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setMessage(getString(R.string.first_time_dialog_guide) + "\n\n" +
@@ -147,7 +171,7 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     private void initTimer() {
-        Log.d(TAG, "initTimer()");
+        if (DEBUG) Log.d(TAG, "initTimer()");
         Intent intent = getIntent();
 
         timerType = (TimerType) intent.getSerializableExtra(StartActivity.TIMER_TYPE);
@@ -179,11 +203,11 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     private void addTimerTypeToSharedPrefs(TimerType timerType) {
-        Log.d(TAG, "addTimerTypeToSharedPrefs: " + timerType.getValue());
+        if (DEBUG) Log.d(TAG, "addTimerTypeToSharedPrefs: " + timerType.getValue());
         int timerTypeValue = settings.getInt(StartActivity.TIMER_TYPE, TIMER_TYPE_ERROR_VALUE);
 
         if (timerTypeValue != TIMER_TYPE_ERROR_VALUE || timerTypeValue != timerType.getValue()) {
-            Log.d(TAG, "adding timer type value: " + timerType.getValue());
+            if (DEBUG) Log.d(TAG, "adding timer type value: " + timerType.getValue());
             editor = settings.edit();
             editor.putInt(StartActivity.TIMER_TYPE, timerType.getValue());
             editor.commit();
@@ -206,22 +230,21 @@ public class TimerActivity extends ActionBarActivity {
 
     private void manageRecreatingActivity(Bundle savedInstanceState) {
         if (isTimerResumedFromNotification()) {
-            Log.d(TAG, "Timer resumed from notification");
+            if (DEBUG) Log.d(TAG, "Timer resumed from notification");
             if (getIntent().getStringExtra(START_PAUSE_STATE_PARAM).equals(PLAY_BUTTON_START_STATE))
                 setPlayButtonState(PLAY_BUTTON_START_STATE);
             else
                 setPlayButtonState(PLAY_BUTTON_PAUSE_STATE);
 
-            Log.i("xxx", "time: " + getIntent().getLongExtra(TIME_LEFT_PARAM, 0));
             setTimer(getIntent().getLongExtra(TIME_LEFT_PARAM, 0));
             timeLeft = getIntent().getLongExtra(TIME_LEFT_PARAM, 0);
             getIntent().removeExtra(START_PAUSE_STATE_PARAM);
         } else {
             if (savedInstanceState == null || savedInstanceState.getLong(TIME_LEFT_PARAM) == 0) {
-                Log.d(TAG, "Timer set to start time");
+                if (DEBUG) Log.d(TAG, "Timer set to start time");
                 setTimer(startTime);
             } else {
-                Log.d(TAG, "Timer set to savedTime");
+                if (DEBUG) Log.d(TAG, "Timer set to savedTime");
                 long savedTimeLeft = savedInstanceState.getLong(TIME_LEFT_PARAM);
                 if (savedTimeLeft > 0) {
                     timeLeft = savedTimeLeft;
@@ -273,7 +296,7 @@ public class TimerActivity extends ActionBarActivity {
         Intent timerServiceIntent = new Intent(this, TimerService.class);
 
         boolean isServiceBinded = getApplicationContext().bindService(timerServiceIntent, connection, Context.BIND_AUTO_CREATE);
-        Log.d(TAG, "onStart(), isServiceBinded: " + isServiceBinded);
+        if (DEBUG) Log.d(TAG, "onStart(), isServiceBinded: " + isServiceBinded);
 
         if (TimerService.hasTimerFinished) {
             setTimer(0);
@@ -290,7 +313,7 @@ public class TimerActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop timeLeft: " + timeLeft);
+        if (DEBUG) Log.d(TAG, "onStop timeLeft: " + timeLeft);
 
         if (isTimerActive || isTimerResumed())
             NotificationCreator.createTimerRunningNotification(getApplicationContext(), (String) playButton.getTag(), timeLeft, timerType, isExtraButtonShown);
@@ -299,7 +322,7 @@ public class TimerActivity extends ActionBarActivity {
             notificationManager.cancel(NotificationCreator.NOTIFICATION_TIMER_RUNNING);
             isTimerActive = false;
             if (serviceBound) {
-                Log.i(TAG, "onStop() isFinishing, unbinding service..");
+                if (DEBUG) Log.i(TAG, "onStop() isFinishing, unbinding service..");
                 getApplicationContext().unbindService(connection);
 
                 sendMessageToService(MSG_STOP_TIMER);
@@ -309,7 +332,7 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     private void sendMessageToService(int messageType) {
-        Log.d(TAG, "sendMessageToService(" + messageType + ")");
+        if (DEBUG) Log.d(TAG, "sendMessageToService(" + messageType + ")");
         Message msg = Message.obtain();
         msg.what = messageType;
         switch (messageType) {
@@ -320,7 +343,7 @@ public class TimerActivity extends ActionBarActivity {
                     msg.obj = startTime;
                 break;
             case MSG_STOP_TIMER:
-                Log.i(TAG, "startTime: " + startTime);
+                if (DEBUG) Log.i(TAG, "startTime: " + startTime);
                 msg.obj = startTime;
                 break;
         }
@@ -328,7 +351,7 @@ public class TimerActivity extends ActionBarActivity {
         try {
             service.send(msg);
         } catch (RemoteException e) {
-            Log.e(TAG, "sendMessage RemoteException, e: " + e.getMessage());
+            if (DEBUG) Log.e(TAG, "sendMessage RemoteException, e: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -339,7 +362,7 @@ public class TimerActivity extends ActionBarActivity {
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume()");
+        if (DEBUG) Log.d(TAG, "onResume()");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMsgReceiver, new TimerIntentFilter());
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NotificationCreator.NOTIFICATION_TIMER_RUNNING);
@@ -349,7 +372,7 @@ public class TimerActivity extends ActionBarActivity {
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause()");
+        if (DEBUG) Log.d(TAG, "onPause()");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMsgReceiver);
         super.onPause();
     }
@@ -362,7 +385,7 @@ public class TimerActivity extends ActionBarActivity {
         if (isExtraButtonShown)
             outState.putBoolean(SHOW_EXTRA_ROUND_BUTTON_PARAM, true);
 
-        Log.i(TAG, "onSaveInstanceState(): " + outState.toString());
+        if (DEBUG) Log.i(TAG, "onSaveInstanceState(): " + outState.toString());
         super.onSaveInstanceState(outState);
     }
 
@@ -485,8 +508,8 @@ public class TimerActivity extends ActionBarActivity {
     }
 
     private void showAboutDialog() {
-            Log.i(TAG, "App first time used, showing welcome screen");
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (DEBUG) Log.i(TAG, "App first time used, showing welcome screen");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         try {
             builder.setMessage(getString(R.string.app_name) + " " + getVersionName() + "\n" +
@@ -516,9 +539,9 @@ public class TimerActivity extends ActionBarActivity {
             switch (view.getId()) {
                 case R.id.start_pause_button:
                     if (playButton.getTag().equals(PLAY_BUTTON_START_STATE)) {
-                        Log.i(TAG, "Start clicked, start time: " + startTime + " timeLeft: " + timeLeft);
+                        if (DEBUG) Log.i(TAG, "Start clicked, start time: " + startTime + " timeLeft: " + timeLeft);
                         if (timeLeft == 0 || timeLeft == startTime) {
-                            Log.d(TAG, "Starting prepare timer");
+                            if (DEBUG) Log.d(TAG, "Starting prepare timer");
                             sendMessageToService(MSG_START_PREPARATION_TIMER);
                         } else
                             sendMessageToService(MSG_START_TIMER);
@@ -528,14 +551,14 @@ public class TimerActivity extends ActionBarActivity {
 
                         setPlayButtonState(PLAY_BUTTON_PAUSE_STATE);
                     } else {
-                        Log.i(TAG, "Pause clicked");
+                        if (DEBUG) Log.i(TAG, "Pause clicked");
                         sendMessageToService(MSG_PAUSE_TIMER);
                         setPlayButtonState(PLAY_BUTTON_START_STATE);
                     }
                     break;
 
                 case R.id.stop_reset_button:
-                    Log.d(TAG, "Stop clicked");
+                    if (DEBUG) Log.d(TAG, "Stop clicked");
                     isTimerActive = false;
 
                     if (playButton.getTag().equals(PLAY_BUTTON_PAUSE_STATE)) {
@@ -545,7 +568,7 @@ public class TimerActivity extends ActionBarActivity {
                     break;
 
                 case R.id.extra_round_button:
-                    Log.i(TAG, "Extra round clicked");
+                    if (DEBUG) Log.i(TAG, "Extra round clicked");
                     sendMessageToService(MSG_START_EXTRA_ROUND_TIMER);
 
                     if (!isTimerActive)
@@ -556,7 +579,7 @@ public class TimerActivity extends ActionBarActivity {
             }
 
         } else
-            Log.w(TAG, "onButtonClick() serviceBound false");
+        if (DEBUG) Log.w(TAG, "onButtonClick() serviceBound false");
     }
 
     private void setPlayButtonState(String state) {
@@ -579,14 +602,14 @@ public class TimerActivity extends ActionBarActivity {
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            Log.d(TAG, "onServiceConnected()");
+            if (DEBUG) Log.d(TAG, "onServiceConnected()");
             TimerActivity.this.service = new Messenger(service);
             serviceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            Log.d(TAG, "onServiceDisconnected()");
+            if (DEBUG) Log.d(TAG, "onServiceDisconnected()");
             service = null;
             serviceBound = false;
         }

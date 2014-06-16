@@ -1,3 +1,25 @@
+/*
+ Copyright Michal Buczek, 2014
+ All rights reserved.
+
+This file is part of Freestyle Timer.
+
+    Freestyle Timer is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Freestyle Timer is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Freestyle Timer; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+
 package bucci.dev.freestyle;
 
 import android.annotation.TargetApi;
@@ -12,7 +34,9 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 
+
 class MediaUtils {
+    private static final boolean DEBUG = false;
     private static final String TAG = "BCC|MediaUtils";
     private static final String SONG_PATH_EMPTY_VALUE = "";
 
@@ -24,13 +48,13 @@ class MediaUtils {
 
         switch (timerType) {
             case BATTLE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.BATTLE_DURATION);
+                if (DEBUG) Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.BATTLE_DURATION);
                 return songDuration >= TimerActivity.BATTLE_DURATION;
             case QUALIFICATION:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.QUALIFICATION_DURATION);
+                if (DEBUG) Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.QUALIFICATION_DURATION);
                 return songDuration >= TimerActivity.QUALIFICATION_DURATION;
             case ROUTINE:
-                Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.routine_duration);
+                if (DEBUG) Log.d(TAG, "isSongLongEnough(): " + songDuration + " > " + TimerActivity.routine_duration);
                 return songDuration >= TimerActivity.routine_duration;
         }
 

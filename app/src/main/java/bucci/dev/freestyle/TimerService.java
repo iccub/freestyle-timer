@@ -1,3 +1,28 @@
+/*
+ Copyright Michal Buczek, 2014
+ All rights reserved.
+
+ Copyright Michal Buczek, 2014
+ All rights reserved.
+
+This file is part of Freestyle Timer.
+
+    Freestyle Timer is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Freestyle Timer is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Freestyle Timer; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+
 package bucci.dev.freestyle;
 
 import android.app.Service;
@@ -24,6 +49,7 @@ import static bucci.dev.freestyle.TimerActivity.SHARED_PREFS_PARAM;
 import static bucci.dev.freestyle.TimerActivity.TIMER_TYPE_ERROR_VALUE;
 
 public class TimerService extends Service {
+    private static final boolean DEBUG = false;
     private static final String TAG = "BCC|TimerService";
 
     //Duplicated values from TimerType enum(Because serializable objects cannot be put in SharedPreferences)
@@ -57,7 +83,7 @@ public class TimerService extends Service {
                     musicPlayer.pause();
                     if (countDownTimer != null) {
                         countDownTimer.cancel();
-                        Log.d(TAG, "Timer paused");
+                        if (DEBUG) Log.d(TAG, "Timer paused");
 
                         hasTimerFinished = false;
                     }
@@ -68,7 +94,7 @@ public class TimerService extends Service {
                     musicPlayer.stop();
                     if (countDownTimer != null) {
                         countDownTimer.cancel();
-                        Log.d(TAG, "Timer stopped");
+                        if (DEBUG) Log.d(TAG, "Timer stopped");
 
                         hasTimerFinished = false;
                     }
@@ -77,12 +103,12 @@ public class TimerService extends Service {
                     break;
 
                 case MSG_START_PREPARATION_TIMER:
-                    Log.i(TAG, "Preparation timer started");
+                    if (DEBUG) Log.i(TAG, "Preparation timer started");
                     startPreparationTimer(false);
                     break;
 
                 case MSG_START_EXTRA_ROUND_TIMER:
-                    Log.i(TAG, "Extra round preparation timer started");
+                    if (DEBUG) Log.i(TAG, "Extra round preparation timer started");
                     startPreparationTimer(true);
                     break;
 
@@ -108,7 +134,7 @@ public class TimerService extends Service {
 
                 @Override
                 public void onFinish() {
-                    Log.d(TAG, "Preparation timer onFinish()");
+                    if (DEBUG) Log.d(TAG, "Preparation timer onFinish()");
                     if (isExtraRound)
                         startTimerFromBackground(TimerActivity.EXTRA_TIME_DURATION);
                     else
@@ -123,7 +149,7 @@ public class TimerService extends Service {
             musicPlayer.play(settings.getString(SAVED_SONG_PATH_PARAM, ""));
 
 
-            Log.i(TAG, "Timer started, milliseconds to finish: " + time);
+            if (DEBUG) Log.i(TAG, "Timer started, milliseconds to finish: " + time);
             countDownTimer = new CountDownTimer(time, COUNT_DOWN_INTERVAL) {
                 @Override
                 public void onTick(long millsUntilFinished) {
@@ -139,7 +165,7 @@ public class TimerService extends Service {
 
                 @Override
                 public void onFinish() {
-                    Log.i(TAG, "Timer onFinish()");
+                    if (DEBUG) Log.i(TAG, "Timer onFinish()");
                     musicPlayer.stop();
 
                     hasTimerFinished = true;
@@ -176,7 +202,7 @@ public class TimerService extends Service {
             case ROUTINE_TIME_VALUE:
                 return TimerActivity.routine_duration + DELAY_FOR_BEEP;
             default:
-                Log.e(TAG, "getStartTime(), Error in getting start time");
+                if (DEBUG) Log.e(TAG, "getStartTime(), Error in getting start time");
                 return 0;
         }
 
@@ -211,7 +237,7 @@ public class TimerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "IBinder onBind()");
+        if (DEBUG) Log.d(TAG, "IBinder onBind()");
         sharedPrefs = getSharedPreferences(SHARED_PREFS_PARAM, MODE_PRIVATE);
 
         return messenger.getBinder();
@@ -219,7 +245,7 @@ public class TimerService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.d(TAG, "IBinder onUnbind()");
+        if (DEBUG) Log.d(TAG, "IBinder onUnbind()");
         musicPlayer.stop();
 
         return super.onUnbind(intent);
