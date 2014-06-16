@@ -3,17 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="bucci.dev.freestyle.TimerActivity">
 
-    <item
-        android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/choose_song"
         android:title="@string/choose_song_menu_tooltip"
         android:icon="@drawable/choose_song"
         app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/about_dialog"
+        android:title="@string/about_action_bar_text"
+        app:showAsAction="never"
         />
 
 </menu>

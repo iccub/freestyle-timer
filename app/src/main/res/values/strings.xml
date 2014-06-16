@@ -21,5 +21,10 @@
     <string name="content_description_extra_round_button">Extra round button</string>
     <string name="content_description_stop_button">Stop button</string>
     <string name="content_description_timer_representation">Timer type representation</string>
+    <string name="about_action_bar_text">About</string>
+    <string name="about_author">Author: Michał Buczek</string>
+    <string name="about_contact_info">Contact me at mail@bucci.pl if you have any questions</string>
+    <string name="about_title">About</string>
+    <string name="close_text">Close</string>
 
 </resources>

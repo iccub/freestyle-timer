@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -475,11 +476,35 @@ public class TimerActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), getString(R.string.stop_timer_to_switch_song_text), Toast.LENGTH_SHORT).show();
                 }
                 return true;
+            case R.id.about_dialog:
+                showAboutDialog();
+                break;
 
-            default:
-                return super.onOptionsItemSelected(item);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showAboutDialog() {
+            Log.i(TAG, "App first time used, showing welcome screen");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        try {
+            builder.setMessage(getString(R.string.app_name) + " " + getVersionName() + "\n" +
+                    getString(R.string.about_author) + "\n\n" +
+                    getString(R.string.about_contact_info))
+                    .setTitle(getString(R.string.about_title))
+                    .setPositiveButton(getString(R.string.close_text), null);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
         }
 
+
+        builder.create().show();
+
+    }
+
+    private String getVersionName() throws PackageManager.NameNotFoundException {
+        return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
     }
 
     public void onButtonClick(View view) {
