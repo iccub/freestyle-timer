@@ -5,7 +5,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:weightSum="1"
     android:gravity="center_vertical"
-    android:baselineAligned="false">
+    android:baselineAligned="false"
+    android:keepScreenOn="true">
 
     <LinearLayout
         android:orientation="vertical"
