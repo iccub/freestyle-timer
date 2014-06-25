@@ -85,6 +85,8 @@ public class StartActivity extends FragmentActivity {
             Fragment fragment = new PageFragment();
             Bundle bundle = new Bundle();
 
+            //Timer type positions are hardcoded, hence the 'magic numbers' bad practice
+            //TODO Change hardcoded number to something better
             switch (position) {
                 case 0:
                     bundle.putSerializable(TIMER_TYPE, TimerType.BATTLE);
